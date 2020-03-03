@@ -218,6 +218,8 @@ case $button in
   2)
     echo "Boot"
     lxterminal --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $CHOICE;sleep 10"
+    #wait until vdesktop is closed before reopening UI
+    while ps -C vdesktop >/dev/null;do   sleep 1; done
     ;;
 
   0)
