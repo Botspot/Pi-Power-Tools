@@ -1,0 +1,73 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+#variable 1 is a space-seperated list of packages
+
+NUM_PKGS=$(echo "$1" | wc -w)
+#echo "$NUM_PKGS"
+#repeat for each package listed
+i=1
+while [ $i -le "$NUM_PKGS" ]; do
+  REQ_PKG="$(echo $1 | cut -d " " -f $i)"
+  #echo "$REQ_PKG"
+  
+  PKG_OK=$(dpkg-query -W --showformat='${Status}\n' "$REQ_PKG"|grep "install ok installed")
+  if [ "" == "$PKG_OK" ]; then
+    PKG_LIST="${PKG_LIST} ${REQ_PKG}" #add package to install list
+  fi
+  #echo $i
+  PKG_LIST="$(echo "$PKG_LIST" | sed -e 's/^ //g')"
+  i=$((i+1))
+done
+
+#list created that only has packages not installed
+#remove spaces
+
+echo "To be installed: ${PKG_LIST}"
+
+#if blank or contains only spaces
+if [ -z "$PKG_LIST" ];then
+  echo "Nothing to install."
+  exit 0
+fi
+
+#has newline chars to display properly
+package_list="$(echo "$PKG_LIST" | tr ' ' '\n')"
+
+#If yad exists, use a yad dialog
+if [ -f /usr/bin/yad ];then
+  echo -e "$package_list" | yad --list --no-click --no-columns --separator='\n' \
+	--title='Pi Power Tools' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	--text=" These packages are required but not installed.   \n Install them now?" \
+	--column=Package \
+	--button="No!${DIRECTORY}/icons/exit.png:1" \
+	--button="Yes!${DIRECTORY}/icons/check.png:0" \
+	--image="${DIRECTORY}/icons/install.png" \
+	--print-column=2 --no-selection 2>/dev/null
+  button=$?
+else #if yad does not exist then fallback to zenity
+  echo -e "$package_list" | zenity --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--list --text=" These packages are required but not installed.   \n Install them now?" \
+  	--ok-label=Yes --cancel-label=No \
+  	--column=foo --hide-header 2>/dev/null
+  button=$?
+fi
+
+#echo $button
+if [ ! $button -eq 0 ];then
+  echo "User declined."
+  exit 1
+fi
+
+echo $PKG_LIST > ${DIRECTORY}/installedpackages
+lxterminal --title="Installing progress" -e "sudo apt install -y $PKG_LIST;echo -e '\nInstallation finished.\nClosing in 5 seconds.';sleep 5"
+if [ ! $? -eq 0 ];then #if apt exits with error
+  echo -e "Could not install the packages!\nTry installing them yourself by running this in the terminal:\nsudo apt install $PGK_LIST" | yad --text-info \
+  	--width=700 --height=150 --title='Pi Power Tools' --center \
+  	--button="OK!${DIRECTORY}/icons/check.png:0" --window-icon="${DIRECTORY}/icons/logo-64.png" 2>/dev/null
+  exit 1
+fi
+sleep 1
+#wait until apt process finishes
+while ps -C apt,dpkg >/dev/null;do
+  sleep 1
+done

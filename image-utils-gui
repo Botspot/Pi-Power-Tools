@@ -1,0 +1,188 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+while true;do
+#if imglist exists, ensure all lines contain valid files
+if [ -f "${DIRECTORY}/imglist" ];then #if imglist exists
+  #number of lines in file
+  numlines=$(wc -l "${DIRECTORY}/imglist" | awk '{ print $1 }')
+  #echo $numlines
+  if [ $numlines -gt 0 ];then #if imglist contains any lines
+    awk -i inplace '! a[$0]++' "${DIRECTORY}/imglist" #remove duplicate lines
+    i=1
+    while [ $i -le $numlines ]; do #repeat until all lines are checked
+      line=$(sed -n "${i}p" < "${DIRECTORY}/imglist") #read that line of text file
+      #echo $line
+      if [ ! -f $line ];then #if line is file not found
+        #echo "not exist!"
+        sed -i "${i}d" "${DIRECTORY}/imglist" #delete the line
+      fi
+      i=$((i+1)) #increase line number by 1 to check the next one
+    done
+    imglist="$(cat ${DIRECTORY}/imglist | tr '\n' '!')"
+    imglist="${imglist::-1}"
+  fi
+fi
+
+#load config
+PART="$(sed "1q;d" "${DIRECTORY}/image-utils.conf")"
+mntpnt="$(sed "2q;d" "${DIRECTORY}/image-utils.conf")"
+resizefree="$(sed "3q;d" "${DIRECTORY}/image-utils.conf")"
+backupfree="$(sed "4q;d" "${DIRECTORY}/image-utils.conf")"
+
+
+
+#if yad exits uncleanly it leaves behind a problematic memory file
+#this deletes it
+ipcrm -M 12345 &>/dev/null
+
+output="$(yad --plug=12345 --tabnum=1 --form --separator='\n' \
+	--field='Credit to <b>RonR</b> for developing these scripts!':LBL '' \
+	--field="\nIMG path::CBE" "$imglist" \
+	--field="   Image-utils homepage!/home/pi/pi-power-tools/icons/link.png:FBTN" "xdg-open https://www.raspberrypi.org/forums/viewtopic.php?t=247568" 2>/dev/null &\
+
+yad --plug=12345 --tabnum=2 --form \
+	--field="<big><b>Mount Options:</b></big>:LBL" '' \
+	--field="IMG Partition::NUM" "$PART"!1..10!1!0 \
+	--field="Mount to::DB" "$mntpnt" \
+	--field="<big><b>Resize Options:</b></big>:LBL" '' \
+	--field="Additional free space in MB::NUM" "$resizefree"!0..3072!64!0 \
+	--field="<big><b>Backup Options:</b></big>:LBL" '' \
+	--field="Total backup IMG size in MB::NUM" "$backupfree"!0..60646!64!0 \
+	--separator='\n' 2>/dev/null &\
+
+yad --notebook --key=12345 --title='RonR IMG Tools' --center --width=500 --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	--tab="IMG!${DIRECTORY}/icons/img-16.png" \
+	--tab="Settings!${DIRECTORY}/icons/settings.png" \
+	--button=Resize!!"Shrinks the selected img file to your specification.":0 \
+	--button=Check!!"Checks the integrity of img file.":2 \
+	--button=Compare!!"Tells you what it would copy over if you clicked Backup.":4 \
+	--button=Backup!!"Synchronizes your running system's OS to the selected IMG file.
+IMG file may not be located on your running system - the path you provide must be on a usb drive.":6 2>/dev/null)"
+
+button=$? #get exit code to determine which button was pressed
+echo "Output: ${output}"
+echo EOO
+echo "Button: ${button}"
+
+if [ $button -eq 252 ] || [ $button -eq 252 ];then #if window manager x was pressed or error
+  exit 0
+fi
+#clear vars
+PART=""
+mntpnt=""
+resizefree=""
+backupfree=""
+
+#parse
+output_length=$(echo -n "$output" | grep -c '^')
+echo "length: $output_length"
+if [ $output_length -eq 10 ];then
+  #Sometimes yad outputs in a different order. This determines which one was outputted.
+  if [ -z "$(echo "$output" | sed -n '3p')" ];then
+    #if img listed on top
+    IMG="$(echo "$output" | sed -n '2p')"
+    PART="$(echo "$output" | sed -n '5p')"
+    mntpnt="$(echo "$output" | sed -n '6p')"
+    resizefree="$(echo "$output" | sed -n '8p')"
+    backupfree="$(echo "$output" | sed -n '10p')"
+  else
+    #if img listed on bottom
+    PART="$(echo "$output" | sed -n '3p')"
+    mntpnt="$(echo "$output" | sed -n '4p')"
+    resizefree="$(echo "$output" | sed -n '6p')"
+    backupfree="$(echo "$output" | sed -n '8p')"
+    IMG="$(echo "$output" | sed -n '10p')"
+  fi
+elif [ $output_length -eq 9 ];then
+  PART="$(echo "$output" | sed -n '2p')"
+  mntpnt="$(echo "$output" | sed -n '3p')"
+  resizefree="$(echo "$output" | sed -n '5p')"
+  backupfree="$(echo "$output" | sed -n '7p')"
+  IMG="$(echo "$output" | sed -n '9p' | tr -d '|')"
+elif [ $output_length -eq 8 ];then
+  IMG="$(echo "$output" | sed -n '1p' | tr -d '|')"
+  PART="$(echo "$output" | sed -n '3p')"
+  mntpnt="$(echo "$output" | sed -n '4p')"
+  resizefree="$(echo "$output" | sed -n '6p')"
+  backupfree="$(echo "$output" | sed -n '8p')"
+else
+  echo "output not the correct length!"
+  exit 1
+fi
+
+echo "img: $IMG"
+echo "part: $PART"
+echo "mntpnt: $mntpnt"
+echo "resizefree: $resizefree"
+echo "backupfree: $backupfree"
+
+#sync to image-utils.conf only if all variables are not blank
+if [ ! -z "$backupfree" ] && [ ! -z "$resizefree" ] && [ ! -z "$mntpnt" ] && [ ! -z "$PART" ] && [ ! -z "$IMG" ];then
+  echo "Updating config file at ${DIRECTORY}/image-utils.conf"
+  echo -n "" > "${DIRECTORY}/image-utils.conf"
+  echo "$PART" >> "${DIRECTORY}/image-utils.conf"
+  echo "$mntpnt" >> "${DIRECTORY}/image-utils.conf"
+  echo "$resizefree" >> "${DIRECTORY}/image-utils.conf"
+  echo "$backupfree" >> "${DIRECTORY}/image-utils.conf"
+fi
+
+if [ -z $IMG ] || [[ ! "$IMG" == *".img" ]];then
+  yad --title='RonR IMG Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    --text="Mind reading is not supported.\n\n(No .img specified.)" \
+    --center --text-align=center \
+    --button="Close!${DIRECTORY}/icons/exit.png:1" 2>/dev/null
+  exit 0
+fi
+
+#add to imglist
+echo "$IMG" >> "${DIRECTORY}/imglist"
+
+#resize	0
+#uuid	2
+#check	4
+#backup	6
+
+#ensure unmounted properly if exited uncleanly
+function cleanup {
+  sudo losetup -d "$LOOP" &>/dev/null
+  sudo umount -fl "$mntpnt" &>/dev/null
+}
+case $button in
+
+  0)
+    echo "Resize"
+    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-shrink $IMG $resizefree"
+    ;;
+
+  2)
+    echo "Check"
+    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-check $IMG Linux"
+    
+    ;;
+
+  4)
+    echo "Compare"
+    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-compare $IMG"
+    ;;
+
+  6)
+    echo "Backup"
+    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-backup $IMG $backupfree"
+    ;;
+
+  1)
+    echo "Error"
+    exit 1
+    ;;
+
+  *)
+    echo "unknown"
+    exit 1
+    ;;
+esac
+
+
+
+
+done
+exit

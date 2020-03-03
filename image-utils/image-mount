@@ -1,0 +1,91 @@
+#!/bin/bash
+
+errexit()
+{
+  echo ""
+  echo "$1"
+  echo ""
+  exit 1
+}
+
+usage()
+{
+  errexit "Usage: $0 imagefile mountpoint [W95|Linux]"
+}
+
+if [ $(id -u) -ne 0 ]; then
+  errexit "$0 must be run as root user"
+fi
+
+IMG="$1"
+MNT="$2"
+PART="$3"
+
+if [[ "${IMG}" = "" || "${MNT}" = "" ]]; then
+  usage
+fi
+
+if [ ! -f "${IMG}" ]; then
+  errexit "${IMG} not found"
+fi
+
+if [ ! -d "${MNT}" ]; then
+  errexit "${MNT} is not a directory"
+fi
+
+if [ "${PART}" = "" ]; then
+  PART="type=83"
+else
+  PART="$(tr [A-Z] [a-z] <<< "${PART}")"
+  if [ "${PART}" = "w95" ];then
+    PART="type=c"
+  elif [ "${PART}" = "linux" ];then
+    PART="type=83"
+  else
+    usage
+  fi
+fi
+
+echo ""
+echo -n "Mount ${IMG} on ${MNT} (y/n)? "
+while read -r -n 1 -s answer; do
+  if [[ "${answer}" = [yYnN] ]]; then
+    echo "${answer}"
+    if [[ "${answer}" = [yY] ]]; then
+      break
+    else
+      errexit "Aborted"
+    fi
+  fi
+done
+echo ""
+
+INFO="$(sfdisk -d "${IMG}")"
+START=$(grep "${PART}" <<< "${INFO}" | sed -n 's|^.*start=\s\+\([0-9]\+\).*$|\1|p')
+SIZE=$(grep "${PART}" <<< "${INFO}" | sed -n 's|^.*size=\s\+\([0-9]\+\).*$|\1|p')
+LOOP="$(losetup -f --show -o $((${START} * 512)) --sizelimit $((${SIZE} * 512)) "${IMG}")"
+if [ $? -ne 0 ]; then
+  errexit "Unable to create loop device"
+fi
+if [ "${PART}" = "type=c" ]; then
+  dosfsck "${LOOP}"
+else
+  FS_TYPE=$(blkid "${LOOP}" | sed -n 's|^.*TYPE="\(\S\+\)".*|\1|p')
+  if [ "${FS_TYPE}" = "f2fs" ]; then
+    fsck.f2fs "${LOOP}"
+  else
+    fsck.ext4 -f "${LOOP}"
+  fi
+fi
+if [ $? -ne 0 ]; then
+  losetup -d "${LOOP}"
+  errexit "Filesystem appears corrupted"
+fi
+mount "${LOOP}" ${MNT}
+echo ""
+echo "${IMG} mounted on ${MNT}"
+echo "echo "Check complete. Press Enter to unmount."
+read i
+umount ${MNT}
+losetup -d ${LOOP}
+echo ""

@@ -1,0 +1,323 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+
+
+
+#variable 1 is img file
+#if left blank prompt user
+if [ -z $1 ];then
+  #if imglist exists, ensure all lines contain valid files
+  if [ -f "${DIRECTORY}/imglist" ];then #if imglist exists
+    #number of lines in file
+    numlines=$(wc -l "${DIRECTORY}/imglist" | awk '{ print $1 }')
+    #echo $numlines
+    if [ $numlines -gt 0 ];then #if imglist contains any lines
+      awk -i inplace '! a[$0]++' "${DIRECTORY}/imglist" #remove duplicate lines
+      i=1
+      while [ $i -le $numlines ]; do #repeat until all lines are checked
+        line=$(sed -n "${i}p" < "${DIRECTORY}/imglist") #read that line of text file
+        #echo $line
+        if [ ! -f $line ];then #if line is file not found
+          #echo "not exist!"
+          sed -i "${i}d" "${DIRECTORY}/imglist" #delete the line
+        fi
+        i=$((i+1)) #increase line number by 1 to check the next one
+      done
+      imglist="$(cat ${DIRECTORY}/imglist | tr '\n' '!')"
+      imglist="${imglist::-1}"
+    fi
+  fi
+  IMG="$(yad --title='Advanced Mount' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--form --separator='\n' --width=500 --height=150\
+  	--field="Paste path::CBE" "$imglist" \
+  	--image="${DIRECTORY}/icons/img-48.png" --image-on-top 2>/dev/null \
+  	--button="Close!${DIRECTORY}/icons/exit.png:1" \
+  	--button="Next!${DIRECTORY}/icons/forward.png:0")"
+  button=$?
+  if [ $button -eq 1 ] || [ $button -eq 252 ] || [ $button -eq 143 ];then
+    exit 0
+  fi
+  echo "You chose: ${IMG}"
+  
+  if [[ "$IMG" == *".img" ]] && [ -f "$IMG" ];then #ensure disk image exists
+    echo "Disk image detected."
+    echo "$IMG" >> "${DIRECTORY}/imglist"
+  else
+    echo "No such file or directory."
+    yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Could not locate a disk image at the location you specified." \
+    	--center --text-align=center \
+    	--button="Close!${DIRECTORY}/icons/exit.png:1" 2>/dev/null
+    exit 1
+  fi
+else
+  IMG="$1"
+fi
+
+#trap cleanup EXIT
+
+#check if loop device already exists
+available_loops="$(sudo losetup --list -nO back-file,name)"
+
+numlines=$(echo "$available_loops" | wc -l | awk '{print $1}')
+LOOP=''
+LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | awk '{print $2}' | sort)"
+
+echo "Loop: ${LOOP}EOL"
+
+#if multiple loop devices connected to img
+numlines=$(echo "$LOOP" | wc -l | awk '{print $1}')
+if [ $numlines -gt 1 ];then
+  repeat=1
+else
+  repeat=0
+fi
+
+
+#how many loop devices connected to img
+numlines=$(echo "$LOOP" | wc -l | awk '{print $1}')
+
+while [ $numlines -gt 1 ];do
+  echo "Multiple loopback devices linked to this img."
+  #refresh loop file
+  LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | awk '{print $2}' | sort)"
+  LOOP="$(echo -e "$LOOP" | yad --list --separator='\n' \
+  	--title="Advanced Mount" --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--column="Device" --print-column=1 \
+  	--text="There are multiple loop devices associated\nwith <u>$IMG</u>\nWhich one?" \
+  	--button=Select!"${DIRECTORY}/icons/forward.png:2" \
+  	--button=Delete!"${DIRECTORY}/icons/trash.png:0" \
+  	2>/dev/null)"
+  button=$? #get exit code to determine which button was pressed
+  echo "Output: ${LOOP}EOO"
+  if [ $button -eq 252 ];then #if window manager x was pressed
+    exit 0
+  fi
+  case $button in
+    1)
+      echo "Error"
+      exit 1
+      ;;
+    
+    2)
+      echo "Select"
+      numlines=1 #escape loop
+      ;;
+    0)
+      echo "Delete"
+      #get subdevices
+      partitions="$(lsblk $LOOP -no PATH | tail -n +2 | tr '\n' ' ')"
+      #echo "Subdevices: ${partitions}"
+      #unmount subdevices
+      sudo umount $partitions
+      #delete block device
+      sudo losetup -d "$LOOP"
+      
+      #refresh numlines variable
+      LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | awk '{print $2}' | sort)"
+      numlines=$(echo "$LOOP" | wc -l | awk '{print $1}')
+      echo "Numlines is now $numlines"
+      ;;
+  esac
+done
+
+#if loop device does not already exist, create one
+if [ -z $LOOP ];then
+  echo "creating loop device"
+  LOOP="$(sudo losetup -fP --show "$IMG")" || exit 1
+fi
+
+echo "$LOOP"
+partitions="$(lsblk $LOOP -no PATH | tail -n +2)"
+numlines=$(echo "$partitions" | wc -l | awk '{print $1}')
+#echo "partitions: ${partitions}EOO"
+
+#sudo mount /dev/loop0p2 $mntpnt
+
+
+
+#while loop begins
+while true; do
+
+#get subdevices and generate columns
+i=1
+#clear all variables
+label=''
+part_icon=''
+part_mnt=''
+part_total=''
+part_used=''
+tooltips=''
+while [ $i -le $numlines ]; do #repeat until last line is reached
+  echo ''
+  echo $i
+  cur_dev=$(echo "$partitions" | sed -n "${i}p")
+  echo $cur_dev
+  
+  #add mountpoint to part_mnt variable
+  part_mnt="$part_mnt\n$(sudo findmnt -nmo TARGET "$cur_dev")"
+  
+  
+  label="$label\n$(lsblk -nmo LABEL "$cur_dev")"
+  
+  #generate icon for each line of list
+  if [ -z $(sudo findmnt -nmo TARGET "$cur_dev") ];then
+    #if not mounted
+    #display unmounted icon
+    part_icon="${part_icon}\n${DIRECTORY}/icons/unmounted.png"
+    
+    #blank in total size
+    part_total="${part_total}\n"
+    part_used="${part_used}\n"
+    tooltips="${tooltips}\nMounted"
+    
+    #add tooltip
+    tooltips="${tooltips}\nUnmounted"
+  else
+    #if mounted
+    #display mounted icon
+    part_icon="${part_icon}\n${DIRECTORY}/icons/mounted.png"
+       
+    #get used space of partition
+    part_used="${part_used}\n$(echo $((1024*$(df --output=used "$cur_dev" | sed -n 2p | tr -d '\n' | tr -d ' '))) | numfmt --to=iec 2>/dev/null)"
+    
+    #add tooltip
+    tooltips="${tooltips}\nMounted"
+  fi
+  
+  
+  i=$((i+1)) #check the next line
+done
+
+#trim off first line break escape code
+part_mnt=${part_mnt:2}
+#convert line break escape codes to real line breaks
+part_mnt="$(echo -e "$part_mnt")"
+
+#trim off first line break escape code
+part_icon=${part_icon:2}
+#convert line break escape codes to real line breaks
+part_icon="$(echo -e "$part_icon")"
+
+#trim off first line break escape code
+part_total=${part_total:2}
+#convert line break escape codes to real line breaks
+part_total="$(echo -e "$part_total")"
+echo "part total: ${part_total}EOP"
+
+#trim off first line break escape code
+part_used=${part_used:2}
+#convert line break escape codes to real line breaks
+part_used="$(echo -e "$part_used")"
+echo "part used: ${part_used}EOP"
+
+#trim off first line break escape code
+label=${label:2}
+#convert line break escape codes to real line breaks
+label="$(echo -e "$label")"
+
+losetup --list -nO BACK-FILE "$LOOP"
+#exit 0
+
+#echo "Numlines: ${numlines}"
+#echo "partitions: ${partitions}EOO"
+#echo "mounted: ${part_mnt}EOM"
+
+parted_out="$(sudo parted "$LOOP" print -m)"
+#part_nums="$(echo $parted_out | tr ';' '\n' | tail -n +3 | tr -d ' ' | awk -F ":" '{print $1}')"
+part_type="$(echo $parted_out | tr ';' '\n' | tail -n +3 | tr -d ' ' | awk -F ":" '{print $5}')"
+part_total="$(echo $parted_out | tr ';' '\n' | tail -n +3 | tr -d ' ' | awk -F ":" '{print $4}' | tr -d 'B' | numfmt --to=si --from=auto 2>/dev/null)"
+
+part_list="$(paste -d '\n' <(echo "$part_icon") <(echo "$partitions") <(echo "$part_type") <(echo "$label") <(echo "$part_total") <(echo "$part_used") <(echo "$part_mnt"))"
+#echo "$part_list"
+
+output="$(echo -e "$part_list" | yad --list --no-click --separator='\n' \
+	--title="Advanced Mount" --width=600 --height=260 --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	--column=:IMG --column="Partition" --column="FS Type" --column="Label" --column="Size" --column="Used" --column="Mountpoint" \
+	--text="Partitions within <u>$IMG</u>" \
+	--print-column=2 \
+	--button=Delete!"${DIRECTORY}/icons/trash.png"!"Unmounts all partitions, and deletes $LOOP.
+<u>Does not</u> delete the IMG file.:4" \
+	--button=Unmount!"${DIRECTORY}/icons/usb-unmount.png"!'Safely eject to avoid corruption when you unplug it.:2' \
+	--button=Mount!"${DIRECTORY}/icons/usb-mount.png"!'This lets you view the files.:0' \
+	2>/dev/null)"
+
+button=$? #get exit code to determine which button was pressed
+echo "Button: ${button}"
+if [ $button -eq 252 ];then #if window manager x was pressed
+  exit 0
+fi
+
+echo "Output: ${output}EOO"
+
+case $button in
+
+  1)
+    echo "Error"
+    exit 1
+    ;;
+
+  0)
+    echo "Mount"
+    if [ -z $output ];then
+      yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      --text="Mind reading is not supported.\n\n(It looks like you did not select any devices.)\nTry again?" \
+      --center --text-align=center \
+      --button="No!${DIRECTORY}/icons/exit.png:1" \
+      --button="Yes!${DIRECTORY}/icons/forward.png:0" 2>/dev/null || exit 0
+    else
+      mntpnt="$(sed "2q;d" "${DIRECTORY}/image-utils.conf")"
+      mntpnt=$(yad --title='Advanced Mount' --width=300 --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      	--center --text="Mount to:" --entry --entry-text="$mntpnt" \
+      	--button="Cancel!${DIRECTORY}/icons/exit.png:1" --button="OK!${DIRECTORY}/icons/forward.png:0" 2>/dev/null)
+      
+      #only try to mount if ok button was pressed
+      if [ $? -eq 0 ];then
+        errorcode=$(sudo mount $output "$mntpnt" 2>&1)
+        if [ ! $? -eq 0 ];then
+          yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      		--text="Could not mount successfully.\nError is:\n$errorcode" \
+      		--center --text-align=center \
+      		--button="OK:0" 2>/dev/null
+        fi
+      fi
+    fi
+    ;;
+
+  2)
+    echo "Unmount"
+    if [ -z $output ];then
+      yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      --text="Mind reading is not supported.\n\n(It looks like you did not select any devices.)\nTry again?" \
+      --center --text-align=center \
+      --button="No!${DIRECTORY}/icons/exit.png:1" \
+      --button="Yes!${DIRECTORY}/icons/forward.png:0" 2>/dev/null || exit 0
+    else
+      errorcode=$(sudo umount "$output" 2>&1)
+      if [ ! $? -eq 0 ];then
+        yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      	--text="Could not unmount successfully.\nError is:\n$errorcode" \
+      	--center --text-align=center \
+      	--button="OK:0" 2>/dev/null
+      fi
+    fi
+    ;;
+  4)
+    echo "Delete"
+    #get subdevices
+    partitions="$(lsblk $LOOP -no PATH | tail -n +2 | tr '\n' ' ')"
+    echo "Subdevices: ${partitions}"
+    #unmount subdevices
+    sudo umount $partitions
+    #delete loopback device
+    sudo losetup -d "$LOOP"
+    exit 0
+    ;;
+esac
+done
+
+
+
+
+
+
