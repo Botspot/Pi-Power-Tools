@@ -38,7 +38,7 @@ ipcrm -M 12345 &>/dev/null
 output="$(yad --plug=12345 --tabnum=1 --form --separator='\n' \
 	--field='Credit to <b>RonR</b> for developing these scripts!':LBL '' \
 	--field="\nIMG path::CBE" "$imglist" \
-	--field="   Image-utils homepage!/home/pi/pi-power-tools/icons/link.png:FBTN" "xdg-open https://www.raspberrypi.org/forums/viewtopic.php?t=247568" 2>/dev/null &\
+	--field="   Image-utils homepage!${DIRECTORY}/icons/link.png:FBTN" "xdg-open https://www.raspberrypi.org/forums/viewtopic.php?t=247568" 2>/dev/null &\
 
 yad --plug=12345 --tabnum=2 --form \
 	--field="<big><b>Mount Options:</b></big>:LBL" '' \

@@ -71,7 +71,7 @@ output="$(echo -e "$device_list" | yad --plug=12345 --tabnum=2 --list --no-heade
 
 yad --plug=12345 --tabnum=3 --form --separator='\n' \
 	--field="Paste path::CBE" "$imglist" \
-	--field="Or find one:":FL --file-filter="*.img" /home/pi/Downloads \
+	--field="Or find one:":FL --file-filter="*.img" ${HOME}/Downloads \
 	--field="IMG-specific tools::LBL" '' \
 	--field="Image-Utils GUI...!"${DIRECTORY}/icons/toolbox.png"!RonR"\'"s image-utils wrapped in a graphical frontend.":fbtn -c "${DIRECTORY}/image-utils-gui" \
 	--field="Advanced Mount...!"${DIRECTORY}/icons/toolbox.png"!Control exactly how and where to mount each partition.":fbtn -c "${DIRECTORY}/advmount" \
@@ -127,7 +127,7 @@ if [ ! $button -eq 3 ]&&[ ! $button -eq 6 ];then #only parse if refresh button w
     DEVimp=0
   fi
   
-  if [ -z $DIR ] || [ $DIR = /home/pi/Downloads ];then
+  if [ -z $DIR ] || [ $DIR = ${HOME}/Downloads ];then
     #echo "dir is not important."
     DIRimp=0
   fi
