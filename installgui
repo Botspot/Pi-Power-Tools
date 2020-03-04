@@ -25,10 +25,7 @@ done
 echo "To be installed: ${PKG_LIST}"
 
 #if blank or contains only spaces
-if [ -z "$PKG_LIST" ];then
-  echo "Nothing to install."
-  exit 0
-fi
+if [ ! -z "$PKG_LIST" ];then
 
 #has newline chars to display properly
 package_list="$(echo "$PKG_LIST" | tr ' ' '\n')"
@@ -71,3 +68,19 @@ sleep 1
 while ps -C apt,dpkg >/dev/null;do
   sleep 1
 done
+
+fi
+#all of the above is skipped if there are no new packages to install.
+
+#check for ppt updates
+
+LATEST_VER="$(wget -qO- https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/version)"
+LOCAL_VER="$(head -n 1 "${DIRECTORY}/version")"
+
+if [ $LATEST_VER -gt $LOCAL_VER ];then
+  yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--text="Version ${LATEST_VER} is available. Download now?" \
+  	--center --text-align=center \
+  	--button="No!${DIRECTORY}/icons/exit.png:1" --button="Yes!${DIRECTORY}/icons/forward.png:0" 2>/dev/null || exit 0
+  ${DIRECTORY}/update
+fi
