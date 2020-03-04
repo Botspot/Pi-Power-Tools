@@ -1,6 +1,6 @@
 ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 # Pi Power Tools
-## The ultimate Swiss Army Knife for Raspbian Disk Images and SD Cards.
+## The Ultimate Swiss Army Knife for Raspbian Disk Images and SD Cards.
 
 ### No other tool can do any of these:
  - **Boot** - Powered by [Vdesktop](https://github.com/Botspot/vdesktop). Runs the disk image in a virtual machine.
