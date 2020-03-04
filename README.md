@@ -15,7 +15,7 @@
 
 After installing, you can run **Pi Power Tools** from either Menu --> Accessories or from the desktop:  
 ![desktop button](https://i.ibb.co/KzJ8cyX/desktop.png)  
-
+---
 # Instructions:
 Pro tip: Most buttons display an explanation if you move your mouse over them.
 ## Tabs of the PPT Main Window:
@@ -32,13 +32,12 @@ Select a USB drive in the list, then click one of the action buttons on the bott
 ![img file page](https://i.ibb.co/BPpQfk5/Screenshot-from-2020-03-03-16-29-07.png)  
 Two ways to open a disk image:  
     • Paste the file's full path in the "Paste Path:" field.  
-Find the path using the file manager:  
+You can copy the path using the file manager:  
 ![pcmanfm copy paths](https://i.ibb.co/tX35Kpk/copy-paths.png)  
-*Pro tip: click the arrow on the right to select previously used disk images.*
+*Pro tip: click the arrow on the right to select previously used disk images.*  
     • Or, click the button in the "Find one:" field to open a disk image.  
 The two lower buttons each open tools that only apply to disk images.  
-
-
+---
 ## Action buttons of the Main Window:  
 
  - **Refresh**  
@@ -54,8 +53,9 @@ Pro tip: *In the `From` field, you can paste the path to a ZIP file.*
 Click the arrow on the right to view all available flash-from devices.  
 If you chose to Download, this window will appear next asking which download program you want.  
 ![Flash tool second page](https://i.ibb.co/gRWxsZ4/flash2.png)  
-With a good Internet connection and a fast usb device, flashing Raspbian Full usually takes **300 seconds or less**.  
-On the other hand, a slow usb device or Internet connection may take over **2000 seconds** to complete.  
+Depending on two factors, the flash time drastically varies:  
+Fast Internet + fast usb device = **300 seconds or less**.  
+Slow usb device or slow Internet connection = > **1500 seconds**.  
 
  - **Boot**  
 Select a device (img file or usb drive), then click Boot. With this handy button, you can customize a disk image before flashing it to your SD card.  
@@ -75,7 +75,7 @@ When you close the above window, the selected device will be unmounted (ejected)
 Lets you edit the partitions of the selected device.  
 ![gparted opening a disk image](https://i.ibb.co/C24p2HC/gparted.png)  
 If Gparted is not already installed, you will be prompted to install it.  
-
+---
 ## Image-specific tool buttons:  
 ![screenshot](https://i.ibb.co/r7Lrn05/image-specific-tools.png)  
  - **Image-Utils GUI**  
@@ -92,8 +92,39 @@ If there are multiple loop devices associated with it, you will be prompted to c
 Now you can mount and unmount each partition where you want to:  
 ![image-utils settings tab](https://i.ibb.co/bFLTDnS/advmount-page-3.png)  
 When you're finished, be sure to click **Delete** to detach the loop device.
+---
+## For those who are interested in the inner workings of Pi Power Tools:
+Pro tip: *There are many comments in the shell scripts. Not only does this help me while debugging, it also makes most of it self-explanatory.*  
+The filesystem is set up like this:
+```
+Pi-Power-Tools #This is the main folder that stores everything.  
+#scripts:
+    advmount #Advanced img mount tool  
+    image-utils-gui #RonR's image-utils gui program. (The actual scripts are stored in the image-utils folder.) 
+    installgui #This prompts for packages to be installed  
+    flash #This is the flash tool  
+    update #This script is what installs/updates Pi Power Tools.  
+    pi-power-tools #This is the main tool  
 
-## FAQ
+#non-scripts:
+    image-utils.conf #Saves the settings of image-utils.  
+    installedpackages #Keeps a record of what the update script installed  
+    README.md #This is what you're reading right now  
+    version #Lets Pi Power Tools keep track of what version it is to see when an update is available.  
+    imglist #Stores previously used disk images  
+
+#Folders:
+    icons #Stores all the icons used in the user interfaces of Pi Power Tools.
+    image-utils #Stores the individual image-utils scripts.
+        
+    vdesktop #Contains all the scripts and files for the Boot button.
+         
+```
+## Q&A
  - Q: Unique logo. What inspired you?  
 ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
-A: It's a mishmash of BB-8, the RPi logo, and a saw blade to convey a power tool.
+**A: It's a mishmash of BB-8, the RPi logo, and a saw blade to convey a power tool.**  
+ - Q: What made you develop this tool?  
+**A: I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. I decided there must be a better way, so I developed this tool.**  
+ - Q: How long did it take to program this?  
+**A: Several months. Zenity was so limited, so I switched to YAD, which allowed much more control over the user interface.**  
