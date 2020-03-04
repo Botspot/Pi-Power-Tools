@@ -107,40 +107,40 @@ Pro tip: *There are many comments in the shell scripts. Not only does this help 
 ```
 Pi-Power-Tools #This is the main folder that stores everything.
   #Scripts:
-    advmount #Advanced img mount tool
-    image-utils-gui #RonR's image-utils gui program. (The actual scripts are stored in the image-utils folder.) 
-    installgui #This prompts for packages to be installed
-    flash #This is the flash tool
-    update #This script is what installs/updates Pi Power Tools.
-    pi-power-tools #This is the main tool.
+    advmount          #Advanced img mount tool
+    image-utils-gui   #RonR's image-utils gui program. (The actual scripts are stored in the image-utils folder.) 
+    installgui        #This prompts for packages to be installed
+    flash             #This is the flash tool
+    update            #This script is what installs/updates Pi Power Tools.
+    pi-power-tools    #This is the main tool.
   #Other files:
-    image-utils.conf #Saves the settings of image-utils.
+    image-utils.conf  #Saves the settings of image-utils.
     installedpackages #Keeps a record of what the update script installed.
-    README.md #This is what you're reading right now.
-    version #Lets Pi Power Tools keep track of what version it is to see when an update is available.
-    imglist #Stores previously used disk images.
+    README.md         #This is what you're reading right now.
+    version           #Lets Pi Power Tools keep track of what version it is to see when an update is available.
+    imglist           #Stores previously used disk images.
   #Folders:
-    icons #Stores all the icons used in the user interfaces of Pi Power Tools.
-    image-utils #Stores the individual image-utils scripts.
+    icons             #Stores all the icons used in the user interfaces of Pi Power Tools.
+    image-utils       #Stores the individual image-utils scripts.
       #Scripts:
-        image-backup #Backs up the running operating system to the specified disk image. Disk image must be located on /mnt or /media.
-        image-check #Returns a bunch of data about the specified disk image.
-        image-compare #Lists the files image-backup would copy over if run.
-        image-mount #Mounts an img to a specified mountpoint. Not available in the GUI tool since it is buggy.
-        image-set-ptuuid #Not available in the GUI tool since vdesktop takes care of it.
-        image-shrink #Makes the specified image as small as possible. An optional second word specifies additional free space in MB.
+        image-backup      #Backs up the running operating system to the specified disk image. Disk image must be located on /mnt or /media.
+        image-check       #Returns a bunch of data about the specified disk image.
+        image-compare     #Lists the files image-backup would copy over if run.
+        image-mount       #Mounts an img to a specified mountpoint. Not available in the GUI tool since it is buggy.
+        image-set-ptuuid  #Not available in the GUI tool since vdesktop takes care of it.
+        image-shrink      #Makes the specified image as small as possible. An optional second word specifies additional free space in MB.
       #Other files:
-        README.txt #RonR wrote these instructions for image-tools.
-    vdesktop #Contains all the scripts and files for the Boot button.
+        README.txt        #RonR wrote these instructions for image-tools.
+    vdesktop        #Contains all the scripts and files for the Boot button.
       #Scripts:
-        rc.local #This is temporarily mounted to the selected device during boot to display the blue message in the boot text.
-        vdesktop #The main boot script
+        rc.local    #This is temporarily mounted to the selected device during boot to display the blue message in the boot text.
+        vdesktop    #The main boot script
       #Other files:
-        profile #This is temporarily mounted to the selected device to start the desktop session.
-        autologin #The existence of this file tells vdesktop to login automatically.
-        shadow #This is mounted to /etc/shadow of the selected device to ensure the pi's password is raspberry.
-        version #Lets Vdesktop keep track of what version it is to see when an update is available.
-        README.md #The instructions for running vdesktop standalone
+        profile     #This is temporarily mounted to the selected device to start the desktop session.
+        autologin   #The existence of this file tells vdesktop to login automatically.
+        shadow      #This is mounted to /etc/shadow of the selected device to ensure the pi's password is raspberry.
+        version     #Lets Vdesktop keep track of what version it is to see when an update is available.
+        README.md   #The instructions for running vdesktop standalone
 ```
 ### Basic script design:
  - The scripts all use YAD to handle the user interface.* I found that Zenity was way too limited.  
