@@ -105,6 +105,7 @@ while [ $numlines -gt 1 ];do
       ;;
     0)
       echo "Delete"
+      sudo umount $LOOP
       #get subdevices
       partitions="$(lsblk $LOOP -no PATH | tail -n +2 | tr '\n' ' ')"
       #echo "Subdevices: ${partitions}"
@@ -266,9 +267,8 @@ case $button in
       --button="No!${DIRECTORY}/icons/exit.png:1" \
       --button="Yes!${DIRECTORY}/icons/forward.png:0" 2>/dev/null || exit 0
     else
-      mntpnt="$(sed "2q;d" "${DIRECTORY}/image-utils.conf")"
       mntpnt=$(yad --title='Advanced Mount' --width=300 --window-icon="${DIRECTORY}/icons/logo-64.png" \
-      	--center --text="Mount to:" --entry --entry-text="$mntpnt" \
+      	--center --text="Mount to:" --entry --entry-text="/media/pi/pi-power-tools" \
       	--button="Cancel!${DIRECTORY}/icons/exit.png:1" --button="OK!${DIRECTORY}/icons/forward.png:0" 2>/dev/null)
       
       #only try to mount if ok button was pressed
@@ -304,6 +304,7 @@ case $button in
     ;;
   4)
     echo "Delete"
+    sudo umount $LOOP
     #get subdevices
     partitions="$(lsblk $LOOP -no PATH | tail -n +2 | tr '\n' ' ')"
     echo "Subdevices: ${partitions}"
