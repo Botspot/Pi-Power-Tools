@@ -82,5 +82,5 @@ if [ $LATEST_VER -gt $LOCAL_VER ];then
   	--text="Version ${LATEST_VER} is available. Download now?" \
   	--center --text-align=center \
   	--button="No!${DIRECTORY}/icons/exit.png:1" --button="Yes!${DIRECTORY}/icons/forward.png:0" 2>/dev/null || exit 0
-  ${DIRECTORY}/update
+  wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
 fi
