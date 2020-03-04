@@ -54,7 +54,8 @@ Pro tip: *In the `From` field, you can paste the path to a ZIP file.*
 Click the arrow on the right to view all available flash-from devices.  
 If you chose to Download, this window will appear next asking which download program you want.  
 ![Flash tool second page](https://i.ibb.co/gRWxsZ4/flash2.png)  
-With a good Internet connection and a fast usb device, flashing Raspbian Full usually takes 300 seconds or less.  
+With a good Internet connection and a fast usb device, flashing Raspbian Full usually takes **300 seconds or less**.  
+On the other hand, a slow usb device or Internet connection may take over **2000 seconds** to complete.  
 
  - **Boot**  
 Select a device (img file or usb drive), then click Boot. With this handy button, you can customize a disk image before flashing it to your SD card.  
