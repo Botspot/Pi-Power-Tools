@@ -45,6 +45,6 @@ echo -e "# Finished!    Pi Power Tools is located in Menu --> Accessories."
 #sleep 5
 ) |
 zenity --progress --title='PPT Installer' --window-icon="${HOME}/logo-64.png" \
-	--width=300 --auto-kill --ok-label=Start 2>/dev/null
+	--width=300 --auto-kill --ok-label=Finish 2>/dev/null
 rm "${HOME}/logo-64.png"
-${HOME}/Pi-Power-Tools/pi-power-tools &
+#${HOME}/Pi-Power-Tools/pi-power-tools &
