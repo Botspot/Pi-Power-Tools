@@ -103,7 +103,7 @@ When you're finished, be sure to click **Delete** to detach the loop device.
 ---
 ## For those who are interested in the inner workings of Pi Power Tools:
 Pro tip: *There are many comments in the shell scripts. Not only does this help me while debugging, it also makes most of it self-explanatory.*  
-The filesystem is set up like this:
+### The filesystem is set up like this:
 ```
 Pi-Power-Tools #This is the main folder that stores everything.
   #Scripts:
@@ -112,15 +112,13 @@ Pi-Power-Tools #This is the main folder that stores everything.
     installgui #This prompts for packages to be installed
     flash #This is the flash tool
     update #This script is what installs/updates Pi Power Tools.
-    pi-power-tools #This is the main tool
-
+    pi-power-tools #This is the main tool.
   #Other files:
     image-utils.conf #Saves the settings of image-utils.
-    installedpackages #Keeps a record of what the update script installed
-    README.md #This is what you're reading right now
+    installedpackages #Keeps a record of what the update script installed.
+    README.md #This is what you're reading right now.
     version #Lets Pi Power Tools keep track of what version it is to see when an update is available.
-    imglist #Stores previously used disk images
-
+    imglist #Stores previously used disk images.
   #Folders:
     icons #Stores all the icons used in the user interfaces of Pi Power Tools.
     image-utils #Stores the individual image-utils scripts.
@@ -144,11 +142,15 @@ Pi-Power-Tools #This is the main folder that stores everything.
         version #Lets Vdesktop keep track of what version it is to see when an update is available.
         README.md #The instructions for running vdesktop standalone
 ```
+### Basic script design:
+ - The scripts all use YAD to handle the user interface.* I found that Zenity was way too limited.  
+`*` Okay, `installgui` and `update` *do* use zenity because Raspbian does not include YAD by default.
+
 ## Q&A
  - Q: Unique logo. What inspired you?  
 ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
-**A: It's a mishmash of BB-8, the RPi logo, and a saw blade to convey a power tool.**  
+**A: It's a combination of BB-8, the RPi logo, and a saw blade to convey a power tool.**  
  - Q: What made you develop this tool?  
-**A: I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. I decided there must be a better way, so I developed this tool.**  
+**A: I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so ridiculously tedious, that I realized there must be a better way.**  
  - Q: How long did it take to program this?  
-**A: Several months. Zenity was so limited, so I switched to YAD, which allowed much more control over the user interface.**  
+**A: Several months. But it was entirely worth the effort.**  
