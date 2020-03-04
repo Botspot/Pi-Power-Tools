@@ -16,6 +16,7 @@ After installing, you can run Pi Power Tools from either Menu-->Accessories or f
 ![desktop button](https://i.ibb.co/KzJ8cyX/desktop.png)  
 
 # Instructions:
+Pro tip: Most buttons display an explanation if you move your mouse over them.
 ## Tabs of the PPT Main Window:
  - **Home**  
 ![home page](https://i.ibb.co/NyFx4Sk/home.png)  
@@ -52,6 +53,7 @@ Pro tip: *In the `From` field, you can paste the path to a ZIP file.*
 Click the arrow on the right to view all available flash-from devices.  
 If you chose to Download, this window will appear next asking which download program you want.  
 ![Flash tool second page](https://i.ibb.co/gRWxsZ4/flash2.png)  
+With a good Internet connection and a fast usb device, flashing Raspbian Full usually takes 300 seconds or less.  
 
  - **Boot**  
 Select a device (img file or usb drive), then click Boot. With this handy button, you can customize a disk image before flashing it to your SD card.  
