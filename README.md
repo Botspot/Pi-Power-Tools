@@ -21,7 +21,7 @@ Pro tip: Most buttons display an explanation if you move your mouse over them.
 ## Tabs of the PPT Main Window:
  - **Home**  
 ![home page](https://i.ibb.co/NyFx4Sk/home.png)  
-Nothing much to do here. It looks cool though. Clicking that dark blue link brings you to this page.  
+Nothing much to do here. Clicking that dark blue link brings you to this page.  
 
  - **USB Drive**  
 ![usb drive page](https://i.ibb.co/fDTRmWR/Screenshot-from-2020-03-03-16-28-50.png)  
@@ -67,7 +67,7 @@ After it has booted, a window similar to VNC will open and display the desktop.
 *It is a known issue that the browser crashes with the `Aw, Snap!` error.*  
 
  - **View**  
-Mounts the selected device to /media/pi/pi-power-tools.  
+Mounts the selected device to `/media/pi/pi-power-tools`.  
 ![](https://i.ibb.co/stnrpW0/view-dialog.png)  
 When you close the above window, the selected device will be unmounted (ejected).  
 
@@ -79,8 +79,8 @@ If Gparted is not already installed, you will be prompted to install it.
 ## Image-specific tool buttons:  
 ![screenshot](https://i.ibb.co/r7Lrn05/image-specific-tools.png)  
  - **Image-Utils GUI**  
-![home page](https://i.ibb.co/p4BQj0X/image-tools1.png)  
 [RonR's image-utils](https://www.raspberrypi.org/forums/viewtopic.php?t=247568) wrapped in a graphical frontend.  
+![home page](https://i.ibb.co/p4BQj0X/image-tools1.png)  
 Paste in a location to a disk image, then click an action button. The **settings tab** lets you customize some aspects of the tools.  
 ![image-utils settings tab](https://i.ibb.co/KxPRVhP/image-utils2.png)  
  - **Advanced Mount**  
@@ -91,3 +91,8 @@ If there are multiple loop devices associated with it, you will be prompted to c
 ![image-utils settings tab](https://i.ibb.co/LrrFLcJ/advmount-page-2.png)  
 Now you can mount and unmount each partition where you want to:  
 ![image-utils settings tab](https://i.ibb.co/bFLTDnS/advmount-page-3.png)  
+When you're finished, be sure to click **Delete** to detach the loop device.
+
+## FAQ
+ - Q: Unique logo. What inspired you?
+A: It's a mishmash of BB-8, the RPi logo, and a saw blade to convey a power tool.
