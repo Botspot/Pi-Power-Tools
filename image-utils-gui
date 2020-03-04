@@ -24,10 +24,8 @@ if [ -f "${DIRECTORY}/imglist" ];then #if imglist exists
 fi
 
 #load config
-PART="$(sed "1q;d" "${DIRECTORY}/image-utils.conf")"
-mntpnt="$(sed "2q;d" "${DIRECTORY}/image-utils.conf")"
-resizefree="$(sed "3q;d" "${DIRECTORY}/image-utils.conf")"
-backupfree="$(sed "4q;d" "${DIRECTORY}/image-utils.conf")"
+resizefree="$(sed "1q;d" "${DIRECTORY}/image-utils.conf")"
+backupfree="$(sed "2q;d" "${DIRECTORY}/image-utils.conf")"
 
 
 
@@ -41,9 +39,6 @@ output="$(yad --plug=12345 --tabnum=1 --form --separator='\n' \
 	--field="   Image-utils homepage!${DIRECTORY}/icons/link.png:FBTN" "xdg-open https://www.raspberrypi.org/forums/viewtopic.php?t=247568" 2>/dev/null &\
 
 yad --plug=12345 --tabnum=2 --form \
-	--field="<big><b>Mount Options:</b></big>:LBL" '' \
-	--field="IMG Partition::NUM" "$PART"!1..10!1!0 \
-	--field="Mount to::DB" "$mntpnt" \
 	--field="<big><b>Resize Options:</b></big>:LBL" '' \
 	--field="Additional free space in MB::NUM" "$resizefree"!0..3072!64!0 \
 	--field="<big><b>Backup Options:</b></big>:LBL" '' \
@@ -68,60 +63,35 @@ if [ $button -eq 252 ] || [ $button -eq 252 ];then #if window manager x was pres
   exit 0
 fi
 #clear vars
-PART=""
-mntpnt=""
 resizefree=""
 backupfree=""
 
 #parse
 output_length=$(echo -n "$output" | grep -c '^')
 echo "length: $output_length"
-if [ $output_length -eq 10 ];then
-  #Sometimes yad outputs in a different order. This determines which one was outputted.
-  if [ -z "$(echo "$output" | sed -n '3p')" ];then
-    #if img listed on top
-    IMG="$(echo "$output" | sed -n '2p')"
-    PART="$(echo "$output" | sed -n '5p')"
-    mntpnt="$(echo "$output" | sed -n '6p')"
-    resizefree="$(echo "$output" | sed -n '8p')"
-    backupfree="$(echo "$output" | sed -n '10p')"
-  else
-    #if img listed on bottom
-    PART="$(echo "$output" | sed -n '3p')"
-    mntpnt="$(echo "$output" | sed -n '4p')"
-    resizefree="$(echo "$output" | sed -n '6p')"
-    backupfree="$(echo "$output" | sed -n '8p')"
-    IMG="$(echo "$output" | sed -n '10p')"
-  fi
-elif [ $output_length -eq 9 ];then
-  PART="$(echo "$output" | sed -n '2p')"
-  mntpnt="$(echo "$output" | sed -n '3p')"
-  resizefree="$(echo "$output" | sed -n '5p')"
-  backupfree="$(echo "$output" | sed -n '7p')"
-  IMG="$(echo "$output" | sed -n '9p' | tr -d '|')"
-elif [ $output_length -eq 8 ];then
-  IMG="$(echo "$output" | sed -n '1p' | tr -d '|')"
-  PART="$(echo "$output" | sed -n '3p')"
-  mntpnt="$(echo "$output" | sed -n '4p')"
+if [ $output_length -eq 8 ];then
+  #img listed on the top
+  IMG="$(echo "$output" | sed -n '2p')"
   resizefree="$(echo "$output" | sed -n '6p')"
   backupfree="$(echo "$output" | sed -n '8p')"
+elif [ $output_length -eq 7 ];then
+  #img listed on the bottom
+  IMG="$(echo "$output" | sed -n '7p')"
+  resizefree="$(echo "$output" | sed -n '2p')"
+  backupfree="$(echo "$output" | sed -n '4p')"
 else
   echo "output not the correct length!"
   exit 1
 fi
 
 echo "img: $IMG"
-echo "part: $PART"
-echo "mntpnt: $mntpnt"
 echo "resizefree: $resizefree"
 echo "backupfree: $backupfree"
 
 #sync to image-utils.conf only if all variables are not blank
-if [ ! -z "$backupfree" ] && [ ! -z "$resizefree" ] && [ ! -z "$mntpnt" ] && [ ! -z "$PART" ] && [ ! -z "$IMG" ];then
+if [ ! -z "$backupfree" ] && [ ! -z "$resizefree" ] && [ ! -z "$IMG" ];then
   echo "Updating config file at ${DIRECTORY}/image-utils.conf"
   echo -n "" > "${DIRECTORY}/image-utils.conf"
-  echo "$PART" >> "${DIRECTORY}/image-utils.conf"
-  echo "$mntpnt" >> "${DIRECTORY}/image-utils.conf"
   echo "$resizefree" >> "${DIRECTORY}/image-utils.conf"
   echo "$backupfree" >> "${DIRECTORY}/image-utils.conf"
 fi
@@ -145,29 +115,43 @@ echo "$IMG" >> "${DIRECTORY}/imglist"
 #ensure unmounted properly if exited uncleanly
 function cleanup {
   sudo losetup -d "$LOOP" &>/dev/null
-  sudo umount -fl "$mntpnt" &>/dev/null
 }
 case $button in
 
   0)
     echo "Resize"
-    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-shrink $IMG $resizefree"
+    lxterminal --title=Image-shrink -e "sudo ${DIRECTORY}/image-utils/image-shrink $IMG $resizefree"
+    
+    #wait until finished
+    sleep 1
+    while ps -C image-shrink >/dev/null;do   sleep 1; done
     ;;
 
   2)
     echo "Check"
-    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-check $IMG Linux"
+    lxterminal --title=Image-check -e "sudo ${DIRECTORY}/image-utils/image-check $IMG Linux"
     
+    #wait until finished
+    sleep 1
+    while ps -C image-check >/dev/null;do   sleep 1; done
     ;;
 
   4)
     echo "Compare"
-    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-compare $IMG"
+    lxterminal --title=Image-compare -e "sudo ${DIRECTORY}/image-utils/image-compare $IMG"
+    
+    #wait until finished
+    sleep 1
+    while ps -C image-compare >/dev/null;do   sleep 1; done
     ;;
 
   6)
     echo "Backup"
-    lxterminal --title=Terminal -e "sudo ${DIRECTORY}/image-utils/image-backup $IMG $backupfree"
+    lxterminal --title=Image-backup -e "sudo ${DIRECTORY}/image-utils/image-backup $IMG $backupfree;sleep 10"
+    
+    #wait until finished
+    sleep 1
+    while ps -C image-backup >/dev/null;do   sleep 1; done
     ;;
 
   1)
