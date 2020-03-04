@@ -11,8 +11,9 @@
 
 ## To install:
 #### Run this in the terminal:
-`wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
-After installing, you can run Pi Power Tools from either Menu-->Accessories or from the desktop:  
+`wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`
+
+After installing, you can run **Pi Power Tools** from either Menu --> Accessories or from the desktop:  
 ![desktop button](https://i.ibb.co/KzJ8cyX/desktop.png)  
 
 # Instructions:
