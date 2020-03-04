@@ -37,7 +37,7 @@ Select a USB drive in the list, then click one of the action buttons on the bott
 *Please note that your Pi's root device (/dev/mmcblk0) cannot be flashed or booted.*  
 
  - **IMG File**  
-![img file page](https://i.ibb.co/N1Pf3MD/main3.png)  
+![img file page](https://i.ibb.co/k5F0H1X/main3.png)  
 Two ways to open a disk image:  
     • Paste the file's full path in the "Paste Path:" field.  
 You can copy the path using the file manager:  
