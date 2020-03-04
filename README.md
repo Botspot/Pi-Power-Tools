@@ -16,8 +16,7 @@ After installing, you can run Pi Power Tools from either Menu-->Accessories or f
 ![desktop button](https://i.ibb.co/KzJ8cyX/desktop.png)  
 
 # Instructions:
-## Pi Power Tools Main Window
-Three tabs:
+## Tabs of the PPT Main Window:
  - **Home**  
 ![home page](https://i.ibb.co/NyFx4Sk/home.png)  
 Nothing much to do here. It looks cool though. Clicking that dark blue link brings you to this page.  
@@ -30,12 +29,14 @@ Select a USB drive in the list, then click one of the action buttons on the bott
  - **IMG File**  
 ![img file page](https://i.ibb.co/BPpQfk5/Screenshot-from-2020-03-03-16-29-07.png)  
 Two ways to open a disk image:  
- - Paste the file's full path in the "Paste Path:" field.  
+    • Paste the file's full path in the "Paste Path:" field.  
 Find the path using the file manager:  
 ![pcmanfm copy paths](https://i.ibb.co/tX35Kpk/copy-paths.png)  
 *Pro tip: click the arrow on the right to select previously used disk images.*
- - Or, click the button in the "Find one:" field to open a disk image.  
+    • Or, click the button in the "Find one:" field to open a disk image.  
 The two lower buttons each open tools that only apply to disk images.  
+
+
 ## Action buttons of the Main Window:  
 
  - **Refresh**  
@@ -59,15 +60,30 @@ A Console will appear and display the boot text like this:
 *Under certain circumstances, Vdesktop will ask permission to change a UUID or a machine-id. This rarely corrupts anything, so typing `y` is usually appropriate.*  
 After it has booted, a window similar to VNC will open and display the desktop.  
 ![xephyr](https://i.ibb.co/8zFtZ9V/xephyr.png)  
-*It is a known issue that the browser crashes with an `Aw, Snap!`.*  
+*It is a known issue that the browser crashes with the `Aw, Snap!` error.*  
 
  - **View**  
-Mounts the selected device to /media/pi/pi-power-tools.
-![](https://i.ibb.co/stnrpW0/view-dialog.png)
-When you close the above window, the selected device will be unmounted (ejected).
+Mounts the selected device to /media/pi/pi-power-tools.  
+![](https://i.ibb.co/stnrpW0/view-dialog.png)  
+When you close the above window, the selected device will be unmounted (ejected).  
 
- - **Edit**
-Lets you edit the partitions of the selected device.
-![gparted opening a disk image](https://i.ibb.co/C24p2HC/gparted.png)
-If Gparted is not already installed, you will be prompted to install it.
+ - **Edit**  
+Lets you edit the partitions of the selected device.  
+![gparted opening a disk image](https://i.ibb.co/C24p2HC/gparted.png)  
+If Gparted is not already installed, you will be prompted to install it.  
 
+## Image-specific tool buttons:  
+![screenshot](https://i.ibb.co/r7Lrn05/image-specific-tools.png)  
+ - **Image-Utils GUI**  
+![home page](https://i.ibb.co/p4BQj0X/image-tools1.png)  
+[RonR's image-utils](https://www.raspberrypi.org/forums/viewtopic.php?t=247568) wrapped in a graphical frontend.  
+Paste in a location to a disk image, then click an action button. The **settings tab** lets you customize some aspects of the tools.  
+![image-utils settings tab](https://i.ibb.co/KxPRVhP/image-utils2.png)  
+ - **Advanced Mount**  
+Fine-tune control over loop devices and mountpoints for disk images.  
+Select the disk image you want:  
+![image-utils settings tab](https://i.ibb.co/vLRQscg/advmount-page-1.png)  
+If there are multiple loop devices associated with it, you will be prompted to choose one. You can also delete unwanted loop devices:  
+![image-utils settings tab](https://i.ibb.co/LrrFLcJ/advmount-page-2.png)  
+Now you can mount and unmount each partition where you want to:  
+![image-utils settings tab](https://i.ibb.co/bFLTDnS/advmount-page-3.png)  
