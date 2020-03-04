@@ -94,5 +94,6 @@ Now you can mount and unmount each partition where you want to:
 When you're finished, be sure to click **Delete** to detach the loop device.
 
 ## FAQ
- - Q: Unique logo. What inspired you?
+ - Q: Unique logo. What inspired you?  
+![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 A: It's a mishmash of BB-8, the RPi logo, and a saw blade to convey a power tool.
