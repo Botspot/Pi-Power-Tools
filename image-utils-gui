@@ -120,37 +120,37 @@ case $button in
 
   0)
     echo "Resize"
-    lxterminal --title=Image-shrink -e "sudo ${DIRECTORY}/image-utils/image-shrink $IMG $resizefree"
+    lxterminal --title=Image-shrink -e "sudo ${DIRECTORY}/image-utils/image-shrink $IMG $resizefree;echo 'press Enter to exit.';read enter"
     
     #wait until finished
-    sleep 1
+    sleep 5
     while ps -C image-shrink >/dev/null;do   sleep 1; done
     ;;
 
   2)
     echo "Check"
-    lxterminal --title=Image-check -e "sudo ${DIRECTORY}/image-utils/image-check $IMG Linux"
+    lxterminal --title=Image-check -e "sudo ${DIRECTORY}/image-utils/image-check $IMG Linux;echo 'press Enter to exit.';read enter"
     
     #wait until finished
-    sleep 1
+    sleep 5
     while ps -C image-check >/dev/null;do   sleep 1; done
     ;;
 
   4)
     echo "Compare"
-    lxterminal --title=Image-compare -e "sudo ${DIRECTORY}/image-utils/image-compare $IMG"
+    lxterminal --title=Image-compare -e "sudo ${DIRECTORY}/image-utils/image-compare $IMG;echo 'press Enter to exit.';read enter"
     
     #wait until finished
-    sleep 1
+    sleep 5
     while ps -C image-compare >/dev/null;do   sleep 1; done
     ;;
 
   6)
     echo "Backup"
-    lxterminal --title=Image-backup -e "sudo ${DIRECTORY}/image-utils/image-backup $IMG $backupfree;sleep 10"
+    lxterminal --title=Image-backup -e "sudo ${DIRECTORY}/image-utils/image-backup $IMG $backupfree;echo 'press Enter to exit.';read enter"
     
     #wait until finished
-    sleep 1
+    sleep 5
     while ps -C image-backup >/dev/null;do   sleep 1; done
     ;;
 

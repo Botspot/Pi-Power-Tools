@@ -1,0 +1,69 @@
+#!/bin/bash
+
+DIRECTORY="$(dirname $0)"
+
+#download html
+html="$(wget -qO - https://www.raspberrypi.org/forums/viewtopic.php?t=247568)"
+
+#get line number matching "image-utils.zip"
+linenumber=$(echo "$html" | grep -n -m 1 image-utils.zip | sed  's/\([0-9]*\).*/\1/')
+
+#extract contents of matching line
+downloadurl="$(echo "$html" | sed "${linenumber}q;d")"
+
+#sample downloadurl at this point:
+#			<dt><span
+#class="imageset
+#icon_topic_attach"></span><a
+#class="postlink"
+#href="./download/file.php?id=34607&amp;sid=ade2785741be6055f28382c311ce5bd8">image-utils.zip</a></dt>
+
+downloadurl="$(echo "$downloadurl" | tr ' &"' '\n')"
+
+#sample output at this point:
+#			<dt><span
+#class=
+#imageset
+#icon_topic_attach
+#></span><a
+#class=
+#postlink
+#
+#href=
+#./download/file.php?id=34607&amp;sid=ade2785741be6055f28382c311ce5bd8
+#>image-utils.zip</a></dt>
+
+#get linenumber of "href=". Should be 10.
+linenumber=$(echo "$downloadurl" | grep -n -m 1 ./download | sed  's/\([0-9]*\).*/\1/')
+
+#extract the line that contains the download url
+downloadurl="$(echo "$downloadurl" | sed "${linenumber}q;d")"
+
+#sample output:
+#./download/file.php?id=34607
+
+#remove first character
+downloadurl="${downloadurl:1}"
+
+#sample output:
+#/download/file.php?id=34607
+
+#append website domain name to $downloadurl
+downloadurl="$(echo "https://www.raspberrypi.org/forums${downloadurl}")"
+
+#sample output:
+#https://www.raspberrypi.org/forums/download/file.php?id=34607
+
+echo "Downloading image-utils from $downloadurl"
+
+rm -rf "${DIRECTORY}/image-utils"
+mkdir "${DIRECTORY}/image-utils"
+
+wget "$downloadurl" -O "${DIRECTORY}/image-utils/image-utils.zip"
+
+unzip -o "${DIRECTORY}/image-utils/image-utils.zip" -d "${DIRECTORY}/image-utils" && rm "${DIRECTORY}/image-utils/image-utils.zip"
+
+
+
+
+
