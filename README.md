@@ -121,17 +121,17 @@ Pi-Power-Tools #This is the main folder that stores everything.
     imglist           #Stores previously used disk images.
   #Folders:
     icons             #Stores all the icons used in the user interfaces of Pi Power Tools.
-    image-utils       #Stores the individual image-utils scripts.
+    image-utils       #Ships empty, but the get-latest-image-utils script populates this folder with the below files:
       #Scripts:
         image-backup      #Backs up the running operating system to the specified disk image. Disk image must be located on /mnt or /media.
         image-check       #Returns a bunch of data about the specified disk image.
         image-compare     #Lists the files image-backup would copy over if run.
         image-mount       #Mounts an img to a specified mountpoint. Not available in the GUI tool since it is buggy.
-        image-set-ptuuid  #Not available in the GUI tool since vdesktop takes care of it.
+        image-set-ptuuid  #Not used in the GUI tool.
         image-shrink      #Makes the specified image as small as possible. An optional second word specifies additional free space in MB.
       #Other files:
         README.txt        #RonR wrote these instructions for image-tools.
-    vdesktop        #Contains all the scripts and files for the Boot button.
+    vdesktop        #Ships empty, but installgui populates this folder with the below files:
       #Scripts:
         rc.local    #This is temporarily mounted to the selected device during boot to display the blue message in the boot text.
         vdesktop    #The main boot script
