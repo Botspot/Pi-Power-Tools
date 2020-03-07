@@ -63,7 +63,7 @@ wget "$downloadurl" -O "${DIRECTORY}/image-utils/image-utils.zip"
 
 unzip -o "${DIRECTORY}/image-utils/image-utils.zip" -d "${DIRECTORY}/image-utils" && rm "${DIRECTORY}/image-utils/image-utils.zip"
 
-
+chmod -R +x "${DIRECTORY}/image-utils"
 
 
 
