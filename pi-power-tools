@@ -59,7 +59,7 @@ device_list="Device\nSize\nName\n$(paste -d '\n' <(echo "$device_paths") <(echo 
 #this deletes it
 ipcrm -M 12345 &>/dev/null
 
-echo -e "Welcome to Pi Power Tools!\nManages usb drives and disk images\n\nClick USB Drive or IMG File above.\nChoose a device from the list.\nThen click an action below.\nhttps://www.raspberrypi.org/forums/" | yad --plug=12345 --tabnum=1 --text-info \
+echo -e "Welcome to Pi Power Tools!\nManages usb drives and disk images\n\nClick USB Drive or IMG File above.\nChoose a device from the list.\nThen click an action below.\nhttps://github.com/Botspot/Pi-Power-Tools/" | yad --plug=12345 --tabnum=1 --text-info \
 	--wrap --justify=center --fore=#80FFFF --back=#000000 \
 	--image=${DIRECTORY}/icons/logo-tall.png --show-uri \
 	2>/dev/null &\
