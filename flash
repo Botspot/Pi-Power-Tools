@@ -135,7 +135,7 @@ if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
   devname="$(lsblk -o name,path | grep "$TO" | awk '{print $1}' | head -n 1)"
   echo "Devname: ${devname}EOD"
   
-  #convert user-friendly name to mirrior URL
+  #convert user-friendly name to mirror URL
   if [ "$FROM"  = 'Download Raspbian Desktop Full' ];then
     #echo full
     URL='https://downloads.raspberrypi.org/raspbian_full_latest'
