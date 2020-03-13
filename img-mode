@@ -132,7 +132,7 @@ function download {
   echo "# Done."
   echo 100
   ) |
-  yad --progress --title="Downloading $dlname" --auto-close --center \
+  yad --progress --title="Downloading $dlname" --auto-close --auto-kill --center \
   	--window-icon="${DIRECTORY}/icons/logo-64.png" \
   	--button='Cancel'!"${DIRECTORY}/icons/exit.png":1 \
   	2>/dev/null || exit 0
