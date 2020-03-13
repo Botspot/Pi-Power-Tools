@@ -100,7 +100,7 @@ function download {
       progress=98
     fi
     echo $progress
-      echo "# $(numfmt --to=iec --suffix=B --padding=7 $curbytes)"
+      echo "# ${dlname}: $(numfmt --to=iec --suffix=B --padding=7 $curbytes)"
     sleep 0.1
   done &
   childpid=$!
@@ -145,6 +145,7 @@ function download {
 
 #SELECT IMG
 function selectimg {
+  while [ -z $img ];do
   #if imglist exists, ensure all lines contain valid files
   if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
     #number of lines in file
@@ -167,7 +168,6 @@ function selectimg {
     fi
   fi
   img=''
-  while [ -z $img ];do
     img="$(yad --form --separator='\n' \
     	--title='Pi Power Tools - IMG Mode' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
     	--field="Select an img to continue.":LBL '' \
