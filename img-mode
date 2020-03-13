@@ -106,6 +106,8 @@ function download {
   childpid=$!
   
   trap "kill $childpid" EXIT
+  #add first 100 mb to cache. This speeds the download process.
+  wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
   wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | dd of="${HOME}/download-img/ppt-dl-${dlfilename}" bs=10M
   #wget -q "$dlurl" | busybox unzip -
   kill "$childpid"
