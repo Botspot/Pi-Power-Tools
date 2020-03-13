@@ -311,6 +311,8 @@ case $button in
     echo "View "
     LOOP="$(sudo losetup -fP --show $img)" #create loopback device
     
+    sudo mkdir "$mntpnt" 2>/dev/null
+    
     sudo mount -o rw "${LOOP}p2" "$mntpnt"
     sudo mount -o rw "${LOOP}p1" "${mntpnt}/boot"
     
