@@ -4,7 +4,7 @@ DIRECTORY="$(dirname $0)"
 LATEST_VER="$(wget -qO- https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/version)"
 LOCAL_VER="$(head -n 1 "${DIRECTORY}/data/version")"
 
-#if run as manubutton, open default startup window
+#if run as menubutton, open default startup window
 if [ "$1" = 'menubutton' ];then
   defopen="$(cat "${DIRECTORY}/data/home.conf" | sed -n 2p)"
   if [ "$defopen" = "USB Mode" ];then
@@ -30,8 +30,10 @@ TRUE" > "${DIRECTORY}/data/home.conf"
   fi
 fi
 
+"${DIRECTORY}/installgui" yad
+
 while true;do
-  if [ $LATEST_VER -gt $LOCAL_VER ];then
+  if [ ! -z $LATEST_VER] && [ $LATEST_VER -gt $LOCAL_VER ];then
     addtext="
   Version $LATEST_VER is available. Click Update to install it.
   "
