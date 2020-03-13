@@ -39,12 +39,17 @@ if [ ! -b $partpath ];then
   oops 'Partition 2 does not exist.'
 fi
 
+#extend partition to eof
+echo '
+extending partition to eof'
+echo y | sudo parted $loopdev ---pretend-input-tty resizepart 2 100% || warn 'partition extension failed.'
+
 sudo e2fsck -f $partpath || warn 'Check filesystem failed.'
 
 #shrink filesystem
 echo '
 shrinking filesystem'
-sudo resize2fs -M $partpath || oops 'Shrink filesystem failed.'
+sudo resize2fs -M $partpath || warn 'Shrink filesystem failed.'
 
 fsend="$(sudo resize2fs -P $partpath | awk 'NF>1{print $NF}')"
 echo "endblock: ${fsend}"
