@@ -100,7 +100,7 @@ function download {
       progress=98
     fi
     echo $progress
-      echo "# ${dlname}: $(numfmt --to=iec --suffix=B --padding=7 $curbytes)"
+      echo "# Downloading ${dlname}: $(numfmt --to=iec --suffix=B --padding=7 $curbytes)"
     sleep 0.1
   done &
   childpid=$!
