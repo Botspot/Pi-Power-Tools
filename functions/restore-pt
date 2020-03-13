@@ -1,0 +1,17 @@
+#!/bin/bash
+#this downloads a Raspbian partiton table and overwrites the partition table to the specified image
+#$1 is img file to overwrite partition table
+
+##############
+#intended for img-maker internal use - this doesn't ensure input image exists.
+##############
+
+DIRECTORY="$(dirname "$(dirname $0)")"
+
+sudo dd if="${DIRECTORY}/data/part-table.img" of="$1" bs=1M count=1 conv=notrunc
+
+#enlarge the image to raspbian full specs
+truncate "$1" -s '>7323254784'
+
+"${DIRECTORY}/functions/shrinkimage" "$1"
+"${DIRECTORY}/functions/shrinkimage" "$1"

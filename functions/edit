@@ -1,0 +1,38 @@
+#!/bin/bash
+#$1 is path to img file
+#img path is NOT checked to ensure it exists.
+
+errorbox(){
+  #$1 is message
+  #$2 is type: fatal or left blank
+  if [ -z "$2" ];then
+    yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Oh no!\n\n<b>$1</b>\nTry again?" \
+    	--center --width=300 --text-align=center \
+    	--button="OK!${DIRECTORY}/icons/forward.png:0" 2>/dev/null
+  elif [ "$2" = 'fatal' ];then
+    yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Fatal error:\n<b>$1</b>\nClosing in 30 seconds." \
+    	--center --width=300 --text-align=center \
+    	--timeout=30 --timeout-indicator=bottom \
+    	--button="Close!${DIRECTORY}/icons/exit.png:0" 2>/dev/null
+    	exit 1
+  else
+    errorbox 'errorbox error' fatal
+  fi
+}
+
+DIRECTORY="$(dirname "$(dirname $0)")"
+
+${DIRECTORY}/installgui "gparted" &>/dev/null || exit 0
+
+LOOP="$(sudo losetup -fP --show "$1")" #create loopback device
+
+echo $LOOP
+if [ -z $LOOP ];then
+  errorbox "Could not create loopback device." fatal
+fi
+sudo killall gparted
+sudo gparted "$LOOP"
+#when gparted closed
+sudo losetup -d "$LOOP" &>/dev/null #delete loopback device

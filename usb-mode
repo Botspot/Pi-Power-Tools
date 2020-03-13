@@ -1,0 +1,193 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+
+#ensure prerequesites are installed
+${DIRECTORY}/installgui "yad" &>/dev/null || exit 0
+
+#ERRORBOX
+errorbox(){
+  #$1 is message
+  #$2 is type: fatal or left blank
+  if [ -z "$2" ];then
+    yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Oh no!\n\n<b>$1</b>\nTry again?" \
+    	--center --width=300 --text-align=center \
+    	--button="OK!${DIRECTORY}/icons/forward.png:0" 2>/dev/null
+  elif [ "$2" = 'fatal' ];then
+    yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Fatal error:\n<b>$1</b>\nClosing in 30 seconds." \
+    	--center --width=300 --text-align=center \
+    	--timeout=30 --timeout-indicator=bottom \
+    	--button="Close!${DIRECTORY}/icons/exit.png:0" 2>/dev/null
+    	exit 1
+  else
+    errorbox 'errorbox error' fatal
+  fi
+}
+
+ensurevalid(){
+  if [ -z "$output" ] || [ "$output" = "Device" ];then
+    valid=0
+    errorbox 'No valid device selected.'
+  else #if not empty or Device, ensure valid usb device
+    if [ ! -b "$output" ];then
+      valid=0
+      errorbox 'That USB device no longer exists. Likely you unplugged it.'
+    else
+      valid=1
+    fi
+  fi
+}
+
+while true;do
+  
+  #if imglist exists, ensure all lines contain valid files
+  if [ -f "${DIRECTORY}/imglist" ];then #if imglist exists
+    #number of lines in file
+    numlines=$(wc -l "${DIRECTORY}/imglist" | awk '{ print $1 }')
+    #echo $numlines
+    if [ $numlines -gt 0 ];then #if imglist contains any lines
+      awk -i inplace '! a[$0]++' "${DIRECTORY}/imglist" #remove duplicate lines
+      i=1
+      while [ $i -le $numlines ]; do #repeat until all lines are checked
+        line=$(sed -n "${i}p" < "${DIRECTORY}/imglist") #read that line of text file
+        #echo $line
+        if [ ! -f $line ];then #if line is file not found
+          #echo "not exist!"
+          sed -i "${i}d" "${DIRECTORY}/imglist" #delete the line
+        fi
+        i=$((i+1)) #increase line number by 1 to check the next one
+      done
+      imglist="$(cat ${DIRECTORY}/imglist | tr '\n' '!')"
+      imglist="!${imglist::-1}"
+    fi
+  fi
+  
+  
+  (echo "# "
+  sleep infinity)| yad --progress --pulsate --title="Scanning" \
+	  --text="Scanning Devices..." --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	  --width=300 --height=100 --center --auto-close --auto-kill \
+	  --no-buttons 2>/dev/null &
+  child_pid=$!
+  sleep 0.5
+  parted_out="$(sudo parted -lm 2>/dev/null | grep '/dev/*')"
+  kill $child_pid
+
+  device_paths="$(echo $parted_out | tr ';' '\n' | tr -d ' ' | awk -F ":" '{print $1}')"
+  device_sizes="$(echo $parted_out | tr ';' '\n' | awk -F ":" '{print $2}')"
+  device_names="$(echo $parted_out | tr ';' '\n' | awk -F ":" '{print $7}')"
+
+  #echo "$parted_out"
+  #echo "$device_paths"
+  #echo "$device_sizes"
+  #echo "$device_names"
+
+  device_list="Device\nSize\nName\n$(paste -d '\n' <(echo "$device_paths") <(echo "$device_sizes") <(echo "$device_names"))"
+  #echo -e "$device_list"
+
+  #echo "$imglist"
+  #if yad exits uncleanly it leaves behind a problematic memory file
+  #this deletes it
+  ipcrm -M 12345 &>/dev/null
+
+  output="$(echo -e "$device_list" | yad --list --no-headers --no-click --separator='\n' \
+	  --column=Device --column=Size --column=Name \
+	  --image=${DIRECTORY}/icons/usb-64.png \
+	  --print-column=1 --title='Pi Power Tools - USB Mode' \
+	  --width=530 --height=260 --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	  --button=Home!"${DIRECTORY}/icons/home.png"!'Back to Home:5' \
+	  --button=!"${DIRECTORY}/icons/refresh.png"!'Click this to refresh the USB Device list.:3' \
+	  --button=Flash!"${DIRECTORY}/icons/burn.png"!'Copy everything from an img to a device.:6' \
+	  --button=Boot!"${DIRECTORY}/icons/power.png"!'Boots the selected like a virtual machine.:2' \
+	  --button=View!"${DIRECTORY}/icons/search.png"!'This lets you view the files.:0' \
+	  --button=Edit!"${DIRECTORY}/icons/gparted.png"!'This edits the partitions using gparted.:4' \
+	  --buttons-layout=end 2>/dev/null)"
+
+  button=$? #get exit code to determine which button was pressed
+  echo "$output"
+  echo EOO
+  #echo "$button"
+  
+  mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
+  case $button in
+
+    1)
+      echo "Error"
+      exit 1
+      ;;
+
+    2)
+      echo "Boot"
+      ensurevalid
+      #the above command sets $valid to 1 if usb device exists.
+      if [ $valid -eq 1 ];then
+        ${DIRECTORY}/installgui "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
+        lxterminal --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $output $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10"
+        #wait until vdesktop is closed before reopening UI
+        sleep 10
+        while ps -C vdesktop >/dev/null;do   sleep 1; done
+      fi
+      ;;
+
+    0)
+      echo "View"
+      ensurevalid
+      #the above command sets $valid to 1 if usb device exists.
+      if [ $valid -eq 1 ];then
+        BLKS="$(lsblk -rno PATH $output)"
+        BOOT_PART="$(echo "$BLKS" | sed -n '2p')"
+        ROOT_PART="$(echo "$BLKS" | sed -n '3p')"
+        
+        #get subdevices
+        partitions="$(lsblk $output -no PATH | tail -n +2 | tr '\n' ' ')"
+        echo "Subdevices: ${partitions}"
+        #unmount subdevices twice in case one is a dependency of the other
+        sudo umount $partitions &>/dev/null
+        sudo umount $partitions &>/dev/null
+        
+        sudo rm -rf "$mntpnt"
+        sudo mkdir "$mntpnt" || errorbox "Failed to create folder $mntpnt" fatal
+        
+        sudo mount -o rw --source $ROOT_PART --target "$mntpnt"
+        sudo mount -o rw --source $BOOT_PART --target "${mntpnt}/boot"
+        pcmanfm -n "$mntpnt"
+        yad --title="Viewing $output" --window-icon="${DIRECTORY}/icons/logo-64.png" \
+        	--text="Close this window when you are finished viewing the files." \
+        	--center --text-align=center \
+        	--button="Close!${DIRECTORY}/icons/exit.png:1" 2>/dev/null
+        echo 'unmounting device'
+        sudo umount -fl "${mntpnt}/boot"
+        sudo umount -fl "$mntpnt"
+        sudo rm -rf "$mntpnt"
+      fi
+      ;;
+
+    4)
+      echo "Edit"
+      ensurevalid
+      #the above command sets $valid to 1 if usb device exists.
+      if [ $valid -eq 1 ];then
+        ${DIRECTORY}/installgui "gparted" || exit 0
+        sudo gparted "$output"
+      fi
+      ;;
+    6)
+      echo "Flash"
+      "${DIRECTORY}/flash" "$output"
+      ;;
+    3)
+      echo "refresh"
+      ;;
+    5)
+      echo "home"
+      "${DIRECTORY}/home" &
+      exit 0
+      ;;
+    *)
+      echo "unknown"
+      exit 0
+      ;;
+  esac
+  echo ""
+done

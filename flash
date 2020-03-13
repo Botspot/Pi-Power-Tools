@@ -1,0 +1,544 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+
+#$1 can either be a img file, usb device, or blank.
+
+#ERRORBOX
+errorbox(){
+  #$1 is message
+  #$2 is type: fatal or left blank
+  if [ -z "$2" ];then
+    yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Oh no!\n\n<b>$1</b>\nTry again?" \
+    	--center --width=300 --text-align=center \
+    	--button="OK!${DIRECTORY}/icons/forward.png:0" 2>/dev/null
+  elif [ "$2" = 'fatal' ];then
+    yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Fatal error:\n<b>$1</b>\nClosing in 30 seconds." \
+    	--center --width=300 --text-align=center \
+    	--timeout=30 --timeout-indicator=bottom \
+    	--button="Close!${DIRECTORY}/icons/exit.png:0" 2>/dev/null
+    	exit 1
+  else
+    errorbox 'errorbox error' fatal
+  fi
+}
+
+
+#if not blank, figure out what variable 1 is.
+if [ ! -z $1 ];then
+  if [ -b $1 ];then
+    mime=usb
+  elif [ -f $1 ] && [[ "$1" == *".img" ]];then
+    mime=img
+  else
+    errorbox "$1 not found. You may have unplugged it or deleted it." fatal
+  fi
+else
+  #if blank
+  mime=blank
+fi
+
+#find which partition is mounted to filesystem root
+rootdev="$(sudo findmnt -nmo TARGET,SOURCE | grep "/    " | awk '{print $2}')"
+#find which device hosts that partition
+rootdev="/dev/$(lsblk -no pkname $rootdev)"
+#something fishy is going on if the concluded device does not exist.
+if [ ! -b $rootdev ];then
+  echo "Could not detect which partition mounts filesystem root!"
+  echo "Exiting"
+  exit 1
+fi
+echo "Omitting root device from list: ${rootdev}"
+repeat=1
+while [ $repeat -eq 1 ];do
+  #display waiting dialog
+  (echo "# "
+  sleep infinity)| yad --progress --pulsate --title="Scanning devices" \
+  	--text="Scanning Devices..." --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--width=300 --height=100 --center --auto-close --auto-kill \
+  	--no-buttons 2>/dev/null &
+  child_pid=$!
+  sleep 0.5
+  
+  # V lists all devices            Remove junk output V        V omit root device
+  parted_out="$(sudo parted --script -lm | grep '/dev/*' | grep -v $rootdev )"
+  kill $child_pid
+  
+  echo "parted out"
+  device_names="$(echo $parted_out | tr ';' '\n' | awk -F ":" '{print $7}' )"
+  device_paths="$(echo $parted_out | tr ';' '\n' | awk -F ":" '{print $1}' | tr -d ' ')"
+  
+  devicelist="$(paste -d ' ' <(echo "$device_paths") <(echo "$device_names") | tr '\n' '!')"
+  devicelist="${devicelist::-1}"
+  echo "Devicelist: ${devicelist}EOD"
+  
+  if [ $mime = img ];then
+    echo "mime is img"
+    from="--field=From::RO"
+    fromdev="$1"
+    to="--field=To::CB"
+    todev="$devicelist"
+  else
+    echo "mime is usb or null"
+    
+    #PARSE IMGLIST
+    imglist=''
+    #if imglist exists, ensure all lines contain valid files
+    if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
+      #number of lines in file
+      numlines=$(wc -l "${DIRECTORY}/data/imglist" | awk '{print $1}')
+      echo "Numlines: $numlines"
+      if [ $numlines -gt 0 ];then #if imglist contains any lines
+        awk -i inplace '! a[$0]++' "${DIRECTORY}/data/imglist" #remove duplicate lines
+        i=1
+        while [ $i -le $numlines ]; do #repeat until all lines are checked
+          line=$(sed -n "${i}p" < "${DIRECTORY}/data/imglist") #read that line of text file
+          #echo $line
+          if [ ! -f $line ];then #if line is file not found
+            #echo "not exist!"
+            sed -i "${i}d" "${DIRECTORY}/data/imglist" #delete the line
+          fi
+          i=$((i+1)) #increase line number by 1 to check the next one
+        done
+        imglist="$(cat ${DIRECTORY}/data/imglist | tr '\n' '!')"
+      fi
+    fi
+    echo "parsed imglist to ${imglist}EOI"
+    
+    #PARSE ZIPLIST
+    ziplist=''
+    #if ziplist exists, ensure all lines contain valid files
+    if [ -f "${DIRECTORY}/data/ziplist" ];then #if ziplist exists
+      #number of lines in file
+      numlines=$(wc -l "${DIRECTORY}/data/ziplist" | awk '{print $1}')
+      echo "Numlines: $numlines"
+      if [ $numlines -gt 0 ];then #if ziplist contains any lines
+        awk -i inplace '! a[$0]++' "${DIRECTORY}/data/ziplist" #remove duplicate lines
+        i=1
+        while [ $i -le $numlines ]; do #repeat until all lines are checked
+          line=$(sed -n "${i}p" < "${DIRECTORY}/data/ziplist") #read that line of text file
+          #echo $line
+          if [ ! -f $line ];then #if line is file not found
+            #echo "not exist!"
+            sed -i "${i}d" "${DIRECTORY}/data/ziplist" #delete the line
+          fi
+          i=$((i+1)) #increase line number by 1 to check the next one
+        done
+        ziplist="$(cat ${DIRECTORY}/data/ziplist | tr '\n' '!')"
+      fi
+    fi
+    echo "parsed ziplist to ${ziplist}EOZ"
+    
+    #mirrors list                       ignore commented lines
+    mirrors="$(cat ${DIRECTORY}/data/mirrors | grep -v ^\#)"
+    
+    
+    #parse mirrors list                            
+    fromdev="${ziplist}${imglist}$(echo "$mirrors" | awk '$0="Download "$0' | awk -F '\t' '{print $1}')"
+    #convert line breaks to "!"
+    fromdev="$(echo "$fromdev" | tr '\n' '!')"
+    #remove ending "!"
+    fromdev="${fromdev::-1}"
+    
+    from="--field=From::CBE"
+    to="--field=To::CB"
+    
+    #make selected device appear top on the list
+    #
+    #convert ! to \n for grep to use  --v            get entry containing $1                     exclude entry containing $1                  convert back to "!"
+    todev="$(echo "$devicelist" | tr '!' '\n' | grep "$(echo "$1")" | tr '\n' '!' )$(echo "$devicelist" | tr '!' '\n' | grep -v "$(echo "$1")" | tr '\n' '!' )"
+    
+    #remove residual line break (!)
+    todev="${todev::-1}"
+    
+    echo "fromdev: $fromdev"
+    echo "todev: $todev"
+  fi
+  
+  if [ "$todev" = ' ' ];then
+    flashbutton=''
+    todev='No flash-to devices found. Plug 1 in, then click Refresh.'
+  else
+    flashbutton="--button=Flash!${DIRECTORY}/icons/burn.png!This will overwrite everything on the flash-to device.
+Please be careful.:0"
+  fi
+  
+  output="$(yad --form --separator='\n' --center --width=500 --height=100 \
+  	--title='Flash Tool' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--text="This flashes SD cards.  ZIP and IMG files supported." \
+  	"$from" "$fromdev" \
+  	"$to" "$todev" \
+  	--button='Cancel'!"${DIRECTORY}/icons/exit.png"!:1 \
+  	--button='Refresh'!"${DIRECTORY}/icons/refresh.png"!'Refreshes the flash-to list.':2 \
+  	"$flashbutton" \
+  	2>/dev/null)"
+  button=$?
+  
+  FROM="$(echo "$output" | sed -n '1p')"
+  TO="$(echo "$output" | sed -n '2p' | awk '{print $1}')"
+  
+  echo "From: $FROM"
+  echo "To: $TO"
+  
+  if [ $button -eq 252 ] || [ $button -eq 143 ] || [ $button -eq 1 ];then
+    #if window manager x was pressed
+    #                     or if yad was killed
+    #                                           or if cancel was pressed
+    #then exit the program
+    exit 0
+  fi
+  
+  if [ ! $button -eq 2 ];then
+    repeat=0
+  fi
+done
+
+
+getdevname(){
+  #convert device path to device name
+  devname="$(lsblk -o name,path | grep "$TO" | awk '{print $1}' | head -n 1)"
+  echo "Devname: ${devname}EOD"
+}
+
+umountsubdevs(){
+  #get subdevices
+  partitions="$(lsblk $TO -no PATH | tail -n +2 | tr '\n' ' ')"
+  echo "Subdevices: ${partitions}"
+  #unmount subdevices twice in case one is a dependency of the other
+  sudo umount $partitions
+  sudo umount $partitions
+  
+  #check and make sure unmounted
+  if [ ! -z "$(lsblk -no mountpoint $TO)" ];then
+    errorbox "Failed to unmount $TO." fatal
+  fi
+}
+
+if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
+  #Download mode
+  
+  #convert device path to device name
+  devname="$(lsblk -o name,path | grep "$TO" | awk '{print $1}' | head -n 1)"
+  echo "Devname: ${devname}EOD"
+  
+  #convert user-friendly name to mirror URL
+<<<<<<< HEAD
+  if [ "$FROM"  = 'Download Raspbian Desktop Full' ];then
+    #echo full
+    URL='https://downloads.raspberrypi.org/raspbian_full_latest'
+  elif [ "$FROM" = 'Download Raspbian Desktop' ];then
+    #echo desktop
+    URL='https://downloads.raspberrypi.org/raspbian_latest'
+  elif [ "$FROM" = 'Download Raspbian Lite' ];then
+    #echo lite
+    URL='https://downloads.raspberrypi.org/raspbian_lite_latest'
+  else
+    echo "Unrecognized download site!"
+    exit 1
+  fi
+  echo "Download URL is $URL"
+=======
+  
+  #remove first word "Download"
+  FROM="$(echo "$FROM" | cut -f 2- -d ' ')"
+  
+  #match it to relavent line in mirrors file
+  #Get the line number of the relevant line in text file, then read the data from that line.
+  #
+  #           get first entry so remove urls & size --v
+  #                                                          v-- exact match & output line number in format "2:Raspbian Desktop"
+  #                                                                             v-- seperate out only line number
+  linenumber="$(echo "$mirrors" | awk -F '\t' '{print $1}' | grep -xn "$FROM" | awk -F ':' '{print $1}' )"
+  matchmirror="$(echo "$mirrors" | sed -n "${linenumber}p")"
+>>>>>>> TOTAL overhaul. Hello version 2!
+  
+  #prompt user for which download program
+  output="$(echo -e 'Faster: Download, unzip, flash, all at once. <b>IMG does not get saved to disk</b>.
+Slower: Download and unzip, <u>then</u> flash. Raw IMG file remains.' | yad --list --separator='\n' \
+  	--center --width=570 --height=50 --no-click --no-headers --text="Select a download program:" \
+  	--column=Name --title="Download Options" --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--button='Cancel'!"${DIRECTORY}/icons/exit.png":1 \
+  	--button='Flash'!"${DIRECTORY}/icons/burn.png":0 \
+  	2>/dev/null)"
+  button=$?
+  if [ ! -z "$output" ];then
+    output="$(echo "$output" | awk '{print $1}')" #get only first word
+    output="${output::-1}" #remove colon from end of first word
+  fi
+  
+  #print values to terminal
+  echo "Output: ${output}EOO"
+  echo "Button: ${button}EOB"
+  
+  if [ $button -eq 252 ] || [ $button -eq 143 ] || [ $button -eq 1 ];then
+    #if window manager x was pressed
+    #                     or if yad was killed
+    #                                           or if cancel was pressed
+    #then exit the program
+    exit 0       
+  fi
+  
+  dlurl="$(echo "$matchmirror" | awk -F '\t' '{print $3}')"
+  dlname="$(echo "$matchmirror" | awk -F '\t' '{print $1}')"
+  dlsize="$(wget -qO- "$dlurl" | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n '3p' | awk '{print $1}')"
+  dlfilename="$(wget -qO- "$dlurl" | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n '3p' | awk '{print $4}')"
+  
+  echo "Download name: $dlname"
+  echo "Download size: $dlsize"
+  echo "Download url: $dlurl"
+  echo "Download filename: $dlfilename"
+  
+  
+  if [ -z "$dlsize" ] || [ -z "$dlfilename" ];then
+    errorbox "Could not connect to server.  Likely no Internet connection." fatal
+  fi
+  
+  if [ "$output" = Slower ];then
+    #SLOWER
+    startseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+    
+    getdevname
+    umountsubdevs
+    
+    (echo "0"
+    #download-img is a temporary folder the script downloads its disk image to
+    #the script has to get the full filename
+    #temporarily storing in this folder prevents issues if there is already a img in the home directory
+    echo "# Removing residual folder ${HOME}/download-img"
+    rm -rf "${HOME}/download-img"
+    
+    mkdir download-img
+    cd download-img
+    echo 10
+    
+    curbytes=1
+    while true;do
+      curbytes="$(ls -al * 2>/dev/null | awk '{print $5}')"
+      #echo $curbytes
+      progress="$((curbytes/(dlsize/100)))"
+      if [ $progress -gt 98 ];then
+        progress=98
+      fi
+      echo $progress
+        echo "# Downloading $FROM: $(numfmt --to=iec --suffix=B --padding=7 $curbytes)"
+      sleep 0.1
+    done &
+    childpid=$!
+    trap "kill $childpid" EXIT
+    
+    #add first 100 mb to cache. This speeds the download process.
+    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
+    trap "kill $!" EXIT
+    
+    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | dd of="${HOME}/download-img/ppt-dl-${dlfilename}" bs=1M
+    trap "kill $!" EXIT
+    kill "$childpid"
+    
+    #STAGE 2
+    DL_IMG_LOC="$(find "$(pwd)" -type f)"
+    cd "$HOME"
+    
+    startwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+    sleep 1
+    
+    while true;do
+      curwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+      sleep 0.1
+      #              bytes written
+      progress="$(((curwriteblks-startwriteblks)*512*100/dlsize))"
+      
+      #prevent progress from exceeding 98
+      if [ $progress -gt 98 ];then
+        progress=98
+      fi
+      echo $progress
+      echo "# Flashing $TO: $(numfmt --to=iec --suffix=B $(((curwriteblks-startwriteblks)*512)))"
+    done &
+    childpid=$!
+    trap "kill $childpid" EXIT
+    
+    dd if="$DL_IMG_LOC" | "${DIRECTORY}/functions/buffer" | sudo dd of="$TO" bs=10M
+    trap "kill $!" EXIT
+    kill "$childpid"
+    
+    echo "# Flash finished. Cleaning up..."
+    echo 90
+    mv "$DL_IMG_LOC" "$HOME"
+    rm -rf "${HOME}/download-img"
+    
+    #get new img location and add it to imglist
+    filename="$(echo "$DL_IMG_LOC" | awk -F '/' 'NF>1{print $NF}')"
+    echo "${HOME}/${filename}" >> "${DIRECTORY}/data/imglist"
+    
+    ) |
+    yad --progress --auto-kill --auto-close --title="Flash" --center \
+    	--window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Downloading $dlname then flashing $TO ..." \
+    	--button=Cancel!"${DIRECTORY}/icons/exit.png":1 2>/dev/null
+    
+    #END OF SLOWER DOWNLOAD SECTION
+  else
+    #FASTER
+    
+    getdevname
+    umountsubdevs
+    
+    #if no action selected, Faster download mode is assumed.
+    
+    #get seconds of uptime at start to calculate time taken to flash
+    startseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+    
+    echo "from: $dlurl"
+    echo "to: $TO"
+    
+    #add first 100 mb to cache. This speeds the download process.
+    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
+    
+    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | sudo dd of="$TO" obs=1M &
+    #kill the above command on exit
+    trap "kill $!" EXIT
+    
+    (echo 0
+    #get dlsize of img
+    startwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+    
+    sleep 1
+    
+    #repeat until dd closed
+    while ps -C dd >/dev/null ;do
+      curwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+      sleep 0.1
+      #              bytes written
+      progress="$(((curwriteblks-startwriteblks)*512*100/dlsize))"
+      
+      #prevent progress from exceeding 98
+      if [ $progress -gt 98 ];then
+        progress=98
+      fi
+      echo $progress
+      echo "# $(numfmt --to=iec --suffix=B $(((curwriteblks-startwriteblks)*512)))"
+    done
+    echo "# done"
+    echo 100
+    
+    )| yad --progress --title=Flashing --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--width=300 --height=100 --center --auto-close \
+    	--text="Flashing $TO directly from Internet..." \
+    	--button=Cancel!"${DIRECTORY}/icons/exit.png":1 2>/dev/null
+    
+    #END OF FASTER DOWNLOAD SECTION
+  fi
+  #this section is run after download flash modes. Never runs after a offline flash.
+  
+  sudo killall wget
+  
+elif [[ "$FROM" == *".img" ]] && [ -f "$FROM" ];then
+  #IMG MODE
+  #not download mode
+  
+  #get img location and add it to imglist
+  echo "$FROM" >> "${DIRECTORY}/data/imglist"
+  
+  getdevname
+  umountsubdevs
+  
+  #get seconds of uptime at start to calculate time taken to flash
+  startseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+  
+  dd if="$FROM" | "${DIRECTORY}/functions/buffer" | sudo dd of="$TO" bs=10M &
+  #kill the above command on exit
+  trap "kill $!" EXIT
+    
+  (echo "# Flashing from IMG file..."
+  
+  #get size of img
+  dlsize="$(ls -l "$FROM" | awk '{print $5}')"
+  
+  startwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+  
+  sleep 1
+  
+  #repeat until dd closed
+  while ps -C dd >/dev/null ;do
+    curwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+    sleep 0.1
+    #              bytes written
+    progress="$(((curwriteblks-startwriteblks)*512*100/dlsize))"
+    
+    #prevent progress from exceeding 98
+    if [ $progress -gt 98 ];then
+      progress=98
+    fi
+    echo $progress
+    echo "# $(numfmt --to=iec --suffix=B $(((curwriteblks-startwriteblks)*512)))"
+  done
+  echo 100
+  )| yad --progress \
+	  --title=Flashing --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	  --text="Flashing from <b>${FROM}</b> to <b>${TO}</b>." \
+	  --width=300 --height=100 --center --auto-close \
+	  --button=Cancel!"${DIRECTORY}/icons/exit.png"!:1 2>/dev/null
+elif [[ "$FROM" == *".zip" ]] && [ -f "$FROM" ];then
+  #ZIP MODE
+  #not download or img mode
+  
+  #get zip location and add it to ziplist
+  echo "$FROM" >> "${DIRECTORY}/data/ziplist"
+  
+  getdevname
+  umountsubdevs
+  
+  #get seconds of uptime at start to calculate time taken to flash
+  startseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+  
+  busybox unzip "$FROM" -p | "${DIRECTORY}/functions/buffer" | sudo dd of="$TO" bs=10M &
+  #kill the above command on exit
+  trap "kill $!" EXIT
+  
+  (echo "# Flashing from ZIP file..."
+  
+  #get size of img
+  dlsize="$(busybox unzip -lq "$FROM" 2>/dev/null | sed -n '3p' | awk '{print $1}')"
+  
+  startwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+  
+  sleep 1
+  
+  #repeat until dd closed
+  while ps -C dd >/dev/null ;do
+    curwriteblks="$(cat /proc/diskstats | grep $devname | head -n1 | awk '{print $10}')"
+    sleep 0.1
+    #              bytes written
+    progress="$(((curwriteblks-startwriteblks)*512*100/dlsize))"
+    
+    #prevent progress from exceeding 98
+    if [ $progress -gt 98 ];then
+      progress=98
+    fi
+    echo $progress
+    echo "# $(numfmt --to=iec --suffix=B $(((curwriteblks-startwriteblks)*512)))"
+  done
+  echo 100
+  )| yad --progress \
+  	--title=Flashing --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--text="Flashing from <b>${FROM}</b> to <b>${TO}</b>." \
+  	--width=300 --height=100 --center --auto-close --auto-kill 2>/dev/null
+else
+  errorbox "File not found." fatal
+fi
+
+
+#get seconds of uptime at end to calculate time taken to flash
+endseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+
+#kill dd 2 different ways to make sure actually killed.
+sudo killall dd 2>/dev/null
+sudo kill -9 $(ps -e|grep ' dd' | awk '{print $1}') 2>/dev/null
+
+yad --wrap --text="Flashing complete.\nThat took $((endseconds-startseconds)) seconds." \
+  --title=Flashing --window-icon="${DIRECTORY}/icons/logo-64.png" --width=300 --height=100 \
+	--center --button=Close!"${DIRECTORY}/icons/exit.png":0 2>/dev/null
+
+#kill any accidental subprocesses
+sudo killall flash

@@ -1,0 +1,154 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+
+LATEST_VER="$(wget -qO- https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/version)"
+LOCAL_VER="$(head -n 1 "${DIRECTORY}/data/version")"
+
+#if run as manubutton, open default startup window
+if [ "$1" = 'menubutton' ];then
+  defopen="$(cat "${DIRECTORY}/data/home.conf" | sed -n 2p)"
+  if [ "$defopen" = "USB Mode" ];then
+    "${DIRECTORY}/usb-mode" &
+    exit 0
+  elif [ "$defopen" = "IMG Mode" ];then
+    "${DIRECTORY}/img-mode" &
+    exit 0
+  elif [ "$defopen" = "Flash" ];then
+    "${DIRECTORY}/flash"
+  elif [ "$defopen" = "This window" ];then
+    true
+  else
+    echo "conf corrupted or nonexistent"
+        rm "${DIRECTORY}/data/home.conf"
+        echo "
+IMG Mode
+FALSE
+
+Desktop
+
+TRUE" > "${DIRECTORY}/data/home.conf"
+  fi
+fi
+
+while true;do
+  if [ $LATEST_VER -gt $LOCAL_VER ];then
+    addtext="
+  Version $LATEST_VER is available. Click Update to install it.
+  "
+    addbutton="--button=Update!${DIRECTORY}/icons/download.png!Installs the latest version of Pi Power Tools.:6"
+  elif [ "$(cat "${DIRECTORY}/data/home.conf" | sed -n 2p)" = 'TRUE' ];then
+    addbutton="--button=Update!${DIRECTORY}/icons/download.png!Click this to factory reset Pi Power Tools.:6"
+  else
+    addbutton=''
+  fi
+  output="$(echo "Welcome to Pi Power Tools!
+General Purpose Raspbian Image & SD Card Manager
+$addtext
+Click USB Mode or IMG Mode to get started.
+Curious what a button does? Just hover your mouse over it!
+
+For full help click here:
+https://github.com/Botspot/Pi-Power-Tools" | yad --text-info \
+    --wrap --justify=center --fore=#80FFFF --back=#000000 --title="Pi Power Tools - Home" \
+    --width=530 --height=260 --center --wrap --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    --image=${DIRECTORY}/icons/logo-tall.png --show-uri --fontname="12" \
+    $addbutton \
+    --button='Settings'!"${DIRECTORY}/icons/settings.png"!'Customize your experience with Pi Power Tools.':4 \
+    --button='USB Mode'!"${DIRECTORY}/icons/usb-16.png"!'Manage a USB device that has Raspbian flashed to it.':2 \
+    --button='IMG Mode'!"${DIRECTORY}/icons/img-16.png"!'Everything you need to customize a Raspbian image.':0 \
+    2>/dev/null)"
+  button=$?
+
+  case $button in
+
+    1)
+      echo "Error"
+      exit 1
+      ;;
+      
+    2)
+      echo "USB mode"
+      "${DIRECTORY}/usb-mode" &
+      exit 0
+      ;;
+      
+    0)
+      echo "IMG mode"
+      "${DIRECTORY}/img-mode" &
+      exit 0
+      ;;
+      
+    4)
+      echo "Settings"
+      settings="$(cat "${DIRECTORY}/data/home.conf")"
+      echo "$settings"
+      openoptions="This window
+USB Mode
+IMG Mode
+Flash"
+      if [ -z "$(echo "$openoptions" | grep "$settings")" ];then
+        echo "conf corrupted or nonexistent"
+        rm "${DIRECTORY}/data/home.conf"
+        echo -e "
+This window
+FALSE
+
+Desktop
+" > "${DIRECTORY}/data/home.conf"
+        exit 0
+      fi
+      sorted_open="$(echo "$settings" | sed -n 2p)!$(echo "$openoptions" | grep -v "$(echo "$settings" | sed -n 2p)" | tr '\n' '!' )"
+      
+      bootoptions="Desktop
+Console - autologin
+Console - no autologin"
+      
+      sorted_boot="$(echo "$settings" | sed -n 5p)!$(echo "$bootoptions" | grep -v "$(echo "$settings" | sed -n 5p)" | tr '\n' '!' )"
+      output="$(yad --form --window-icon="${DIRECTORY}/icons/logo-64.png" \
+        --title="Settings" --center \
+        --field="<big>Home Settings</big>:LBL" '' \
+        --field="Menu button opens::CB" "${sorted_open::-1}" \
+        --field="Show Update button even if latest version:CHK" "$(echo "$settings" | sed -n 3p)" \
+        --field="<big>Boot Settings</big>:LBL" '' \
+        --field="Boot to::CB" "${sorted_boot::-1}" \
+        --field="<big>IMG Mode Settings</big>:LBL" '' \
+        --field="Run zerofree during Shrink:CHK" "$(echo "$settings" | sed -n 7p)" \
+        --button='Cancel'!"${DIRECTORY}/icons/back.png":1 \
+        --button='Save'!"${DIRECTORY}/icons/save.png":0 \
+        --separator='\n' 2>/dev/null)"
+      button=$?
+      if [ $button -eq 0 ];then
+        echo "output: ${output}EOO"
+        #save to conf file
+        echo "$output" > "${DIRECTORY}/data/home.conf"
+        
+        #generate vdesktop.conf
+        if [ "$(echo "$output" | sed -n 5p)" = "Desktop" ];then
+          echo "gui" > "${DIRECTORY}/data/vdesktop.conf"
+        elif [ "$(echo "$output" | sed -n 5p)" = 'Console - autologin' ];then
+          echo "cli-login" > "${DIRECTORY}/data/vdesktop.conf"
+        elif [ "$(echo "$output" | sed -n 5p)" = 'Console - no autologin' ];then
+          echo "cli" > "${DIRECTORY}/data/vdesktop.conf"
+        else
+          echo "Failed to parse vdesktop conf!"
+        fi
+        
+      fi
+      ;;
+      
+    6)
+      echo "Update"
+      wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash &
+      ;;
+    *)
+      #any other button
+      echo "exiting"
+      echo ''
+      exit 0
+      ;;
+  esac
+done
+
+
+
+

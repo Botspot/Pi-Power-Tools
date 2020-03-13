@@ -1,0 +1,348 @@
+#!/bin/bash
+DIRECTORY="$(dirname $0)"
+
+#ensure prerequesites are installed
+${DIRECTORY}/installgui "yad" &>/dev/null || exit 0
+
+#kill all subprocesses on exit
+trap 'kill $(jobs -p)' EXIT
+trap 'killall img-mode' EXIT
+
+#ERRORBOX
+errorbox(){
+  #$1 is message
+  #$2 is type: fatal or left blank
+  if [ -z "$2" ];then
+    yad --title='Pi Power Tools - Error' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Oh no!\n\n<b>$1</b>\nTry again?" \
+    	--center --width=300 --text-align=center \
+    	--button="OK!${DIRECTORY}/icons/forward.png:0" 2>/dev/null
+  elif [ "$2" = 'fatal' ];then
+    yad --title='Pi Power Tools - Error' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Fatal error:\n<b>$1</b>\nClosing in 30 seconds." \
+    	--center --width=300 --text-align=center \
+    	--timeout=30 --timeout-indicator=bottom \
+    	--button="Close!${DIRECTORY}/icons/exit.png:0" 2>/dev/null
+    	exit 1
+  else
+    errorbox 'errorbox error' fatal
+  fi
+}
+
+#DOWNLOAD
+function download {
+  downloadicons="${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png"
+  
+  downloadlist="$(cat ${DIRECTORY}/data/mirrors | grep -v ^\#)"
+  
+  downloadlist="$(paste -d '\n' <(echo -e "$downloadicons") <(echo -e "$downloadlist"))"
+  
+  downloadlist="$(echo "$downloadlist" | tr '	' '\n')"
+  
+  repeat=1
+  while [ $repeat = 1 ];do
+    output="$(echo -e "$downloadlist" | yad --list --separator='\n' --center --height=220 --width=700 \
+    	--title='Download new IMG' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="Select IMG to download." --column=:IMG --column=Name --column=Size:SZ --column=URL \
+    	--button='Back'!"${DIRECTORY}/icons/back.png"!:1 \
+    	--button='Download'!"${DIRECTORY}/icons/download.png":0 \
+    	2>/dev/null)"
+    button=$?
+    
+    if [ ! $button -eq 0 ];then
+      img=''
+      return
+    fi
+    
+    echo "Output: ${output}EOO"
+    
+    if [ -z "$output" ];then
+      errorbox "You need to select a download site."
+    else
+      
+      dlname="$(echo "$output" | sed -n 2p)"
+      #dlsize="$(echo "$output" | sed -n 3p)"
+      dlurl="$(echo "$output" | sed -n 4p)"
+      dlsize="$(wget -qO- "$dlurl" | dd bs=1M count=1 | busybox unzip -lq - | sed -n '3p' | awk '{print $1}')"
+      dlfilename="$(wget -qO- "$dlurl" | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n '3p' | awk '{print $4}')"
+      
+      echo "Download URL: $dlurl"
+      echo "Download size: $dlsize"
+      echo "Download name: $dlname"
+      echo "Download filename: $dlfilename"
+      
+      if [ -z "$dlsize" ] || [ -z "$dlfilename" ];then
+        errorbox "Could not connect to server.  Likely no Internet connection." fatal
+      fi
+      repeat=0
+    fi
+    
+  done
+  #past this point, a download url is selected.
+  startseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+  (echo "0"
+  
+  
+  #Download-img is a temporary folder the disk image is downloaded to.
+  #The script has to get the full filename.
+  #Temporarily storing in this folder prevents issues if there is already a img in the home directory.
+  echo "# Removing residual folder ${HOME}/download-img"
+  rm -rf "${HOME}/download-img"
+  
+  mkdir download-img
+  cd download-img
+  curbytes=1
+  while true;do
+    curbytes="$(ls -al * 2>/dev/null | awk '{print $5}')"
+    #echo $curbytes
+    progress="$((curbytes/(dlsize/100)))"
+    if [ $progress -gt 98 ];then
+      progress=98
+    fi
+    echo $progress
+      echo "# $(numfmt --to=iec --suffix=B --padding=7 $curbytes)"
+    sleep 0.1
+  done &
+  childpid=$!
+  
+  trap "kill $childpid" EXIT
+  wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | dd of="${HOME}/download-img/ppt-dl-${dlfilename}" bs=10M
+  #wget -q "$dlurl" | busybox unzip -
+  kill "$childpid"
+  
+  sleep 5
+  imagelocation="$(find "$(pwd)" -type f)"
+  echo "Image location: $imagelocation"
+  filename="$(echo "$imagelocation" | awk -F '/' 'NF>1{print $NF}')"
+  
+  cd "$HOME"
+  
+  echo "# Moving to $HOME"
+  mv "$imagelocation" "$HOME"
+  
+  echo "# deleting temporary folder"
+  rm -r "${HOME}/download-img"
+  
+  echo "${HOME}/${filename}" >> "${DIRECTORY}/data/imglist"
+  img="${HOME}/${filename}"
+  
+  echo "# Done."
+  echo 100
+  ) |
+  yad --progress --title="Downloading $dlname" --auto-close --center \
+  	--window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--button='Cancel'!"${DIRECTORY}/icons/exit.png":1 \
+  	2>/dev/null || exit 0
+  endseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
+  (echo "# Download finished. Elapsed time: $((endseconds-startseconds)) seconds."
+  ) | yad --progress --title="Downloading $dlname" --center \
+  	--window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--button='OK'!"${DIRECTORY}/icons/forward.png":0 \
+  	2>/dev/null
+}
+
+#SELECT IMG
+function selectimg {
+  #if imglist exists, ensure all lines contain valid files
+  if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
+    #number of lines in file
+    numlines=$(wc -l "${DIRECTORY}/data/imglist" | awk '{ print $1 }')
+    #echo $numlines
+    if [ $numlines -gt 0 ];then #if imglist contains any lines
+      awk -i inplace '! a[$0]++' "${DIRECTORY}/data/imglist" #remove duplicate lines
+      i=1
+      while [ $i -le $numlines ]; do #repeat until all lines are checked
+        line=$(sed -n "${i}p" < "${DIRECTORY}/data/imglist") #read that line of text file
+        #echo $line
+        if [ ! -f $line ];then #if line is file not found
+          #echo "not exist!"
+          sed -i "${i}d" "${DIRECTORY}/data/imglist" #delete the line
+        fi
+        i=$((i+1)) #increase line number by 1 to check the next one
+      done
+      imglist="$(cat ${DIRECTORY}/data/imglist | tr '\n' '!')"
+      imglist="${imglist::-1}"
+    fi
+  fi
+  img=''
+  while [ -z $img ];do
+    img="$(yad --form --separator='\n' \
+    	--title='Pi Power Tools - IMG Mode' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--field="Select an img to continue.":LBL '' \
+    	--field=":CBE" "$imglist" \
+    	--button='Home'!"${DIRECTORY}/icons/home.png"!'Back to home':4 \
+    	--button='Download New'!"${DIRECTORY}/icons/download.png":2 \
+  	--button=Next!"${DIRECTORY}/icons/forward.png":0 \
+    	2>/dev/null)"
+    button=$?
+    
+    #if neither next nor download nor usb mode buttons pressed
+    if [ ! $button -eq 2 ]&&[ ! $button -eq 0 ]&&[ ! $button -eq 4 ];then
+      #exit the program
+      exit 0
+    fi
+    
+    if [ $button -eq 4 ];then
+      img=''
+      "${DIRECTORY}/home" &
+      exit 0
+    fi
+    
+    #if clicked next
+    if [ $button -eq 0 ];then
+      if [ -z $img ];then
+        errorbox 'No image specified.'
+      fi
+    fi
+    
+    #if clicked download
+    if [ $button -eq 2 ];then
+      img=''
+      download
+    fi
+  done
+  #remove blank line break
+  img="$(echo "$img" | tail -n 1)"
+}
+
+if [ ! -z $1 ];then
+  img="$1"
+  if [ -f "$img" ] && [[ "$img" == *".img" ]];then
+    #file exists
+    #clear variables
+    set ''
+  else
+    echo "variable: $1"
+    errorbox "The specified IMG file does not exist." fatal
+  fi
+fi
+
+while true;do
+
+if [ -z "$img" ];then
+  selectimg
+fi
+
+#if yad exits uncleanly it leaves behind a problematic memory file
+#this deletes it
+ipcrm -M 12345 &>/dev/null
+
+echo "Image file selected: $img"
+output="$(yad --form --columns=4 --separator='\n' \
+	--title='Pi Power Tools - IMG Mode' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
+	--text="Editing <u><b>$img</b></u>
+IMG-specific tools:" \
+	--field='Reset PT'!"${DIRECTORY}/icons/backup.png"!'Messed up the partitions? This tries to fix it.
+Reverts the partition table to the default one from Raspbian Buster.':FBTN "lxterminal --title=\"Shrinking $img\" -e \"
+if ${DIRECTORY}/functions/restore-pt $img ; then
+  echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
+  sleep 10
+else
+  echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
+  read enter
+fi
+\"" \
+	--field="Advmount"!"${DIRECTORY}/icons/usb-mount.png"!'Control exactly how and where to mount each partition':FBTN "${DIRECTORY}/functions/advmount $img" \
+	--field="Shrink"!"${DIRECTORY}/icons/shrink.png"!'Removes all free space. IMG is made as small as possible.':FBTN "lxterminal --title=\"Shrinking $img\" -e \"
+if ${DIRECTORY}/functions/shrinkimage $img ; then
+  
+  #run zerofree if enabled
+  if [ $(cat "${DIRECTORY}/data/home.conf" | sed -n 7p) = TRUE ];then
+    echo -e '\e[32mCommand succeeded.\e[39m Now running zerofree:'
+    ${DIRECTORY}/functions/zerofree_runner $img
+  else
+    echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
+  fi
+  sleep 10
+else
+  echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
+  read enter
+fi
+\"" \
+	--field="1GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Adding a Gigabyte should fix it!':FBTN "lxterminal --title=\"Adding 1 GB free space to $img\" -e \"
+if ${DIRECTORY}/functions/shrinkimage $img 1024 ; then
+  echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
+  sleep 10
+else
+  echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
+  read enter
+fi\"" \
+  \
+	--button=Back!"${DIRECTORY}/icons/back.png"!:3 \
+	--button=Flash!"${DIRECTORY}/icons/burn.png"!'Copy everything from this img to a device.:2' \
+	--button=Boot!"${DIRECTORY}/icons/power.png"!'Boots the selected like a virtual machine.:4' \
+	--button=View!"${DIRECTORY}/icons/search.png"!'Browse the contents like you would a real storage device.:6' \
+	--button=Edit!"${DIRECTORY}/icons/gparted.png"!'This edits the partitions using gparted.:8' \
+	--buttons-layout=end \
+	2>/dev/null)"
+
+button=$? #get exit code to determine which button was pressed
+echo "${output}EOO"
+#echo "$button"
+
+if [ $button -eq 252 ];then #if window manager x was pressed
+  exit 0
+fi
+
+mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
+case $button in
+
+  1)
+    errorbox "YAD exited with an error." fatal
+    ;;
+  3)
+    echo "Back"
+    img=''
+    ;;
+
+  4)
+    echo "Boot"
+    ${DIRECTORY}/installgui "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
+    lxterminal --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $img $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10"
+    sleep 10
+    #wait until vdesktop is closed before reopening UI
+    while ps -C vdesktop >/dev/null;do   sleep 1; done
+    ;;
+
+  6)
+    echo "View "
+    LOOP="$(sudo losetup -fP --show $img)" #create loopback device
+    
+    sudo mount -o rw "${LOOP}p2" "$mntpnt"
+    sudo mount -o rw "${LOOP}p1" "${mntpnt}/boot"
+    
+    pcmanfm -n "$mntpnt" #view the files
+    yad --title='Viewing IMG' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--text="Close this window when you are finished viewing the files." \
+  	--center --text-align=center \
+  	--button="Close!${DIRECTORY}/icons/exit.png:1" 2>/dev/null
+    sudo losetup -d "$LOOP" &>/dev/null #delete loopback device
+    sudo umount -fl "${mntpnt}/boot" &>/dev/null
+    sudo umount -fl "$mntpnt" &>/dev/null
+    ;;
+
+  8)
+    ${DIRECTORY}/installgui "gparted" &>/dev/null || exit 0
+    echo image
+    LOOP="$(sudo losetup -fP --show $img)" #create loopback device
+
+    echo $LOOP
+    if [ -z $LOOP ];then
+      echo "Could not create loopback device."
+      exit 1
+    fi
+    sudo gparted "$LOOP"
+    sudo losetup -d "$LOOP" &>/dev/null #delete loopback device
+    ;;
+  2)
+    echo "Flash"
+    "${DIRECTORY}/flash" "$img"
+    ;;
+  *)
+    echo "unknown"
+    errorbox "Unknown button pressed: $button" fatal
+    ;;
+esac
+echo ""
+done
+exit

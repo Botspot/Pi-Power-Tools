@@ -1,0 +1,12 @@
+#Want to add some custom image download locations yourself?
+#Just add them below.
+#The download must be in ZIP format, with the IMG being the only file in the ZIP.
+#
+#Quickest way to find the size of the online zipped img:
+#wget -qO- <URL> | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n '3p' | awk '{print $1}'
+#
+#Name<tab>Size in bytes<tab>URL <-- separated by tab characters
+#
+Raspbian Desktop Full	7323254784	http://downloads.raspberrypi.org/raspbian_full_latest
+Raspbian Desktop	3787456512	http://downloads.raspberrypi.org/raspbian_latest
+Raspbian Lite	1849688064	http://downloads.raspberrypi.org/raspbian_lite_latest
