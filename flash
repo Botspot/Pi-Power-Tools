@@ -223,6 +223,7 @@ if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
   echo "Devname: ${devname}EOD"
   
   #convert user-friendly name to mirror URL
+  
   if [ "$FROM"  = 'Download Raspbian Desktop Full' ];then
     #echo full
     URL='https://downloads.raspberrypi.org/raspbian_full_latest'
@@ -249,7 +250,6 @@ if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
   #                                                                             v-- seperate out only line number
   linenumber="$(echo "$mirrors" | awk -F '\t' '{print $1}' | grep -xn "$FROM" | awk -F ':' '{print $1}' )"
   matchmirror="$(echo "$mirrors" | sed -n "${linenumber}p")"
->>>>>>> TOTAL overhaul. Hello version 2!
   
   #prompt user for which download program
   output="$(echo -e 'Faster: Download, unzip, flash, all at once. <b>IMG does not get saved to disk</b>.
