@@ -223,7 +223,6 @@ if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
   echo "Devname: ${devname}EOD"
   
   #convert user-friendly name to mirror URL
-<<<<<<< HEAD
   if [ "$FROM"  = 'Download Raspbian Desktop Full' ];then
     #echo full
     URL='https://downloads.raspberrypi.org/raspbian_full_latest'
@@ -238,7 +237,6 @@ if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
     exit 1
   fi
   echo "Download URL is $URL"
-=======
   
   #remove first word "Download"
   FROM="$(echo "$FROM" | cut -f 2- -d ' ')"
