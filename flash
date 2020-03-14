@@ -81,29 +81,9 @@ while [ $repeat -eq 1 ];do
     todev="$devicelist"
   else
     echo "mime is usb or null"
-    
-    #PARSE IMGLIST
-    imglist=''
-    #if imglist exists, ensure all lines contain valid files
-    if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
-      #number of lines in file
-      numlines=$(wc -l "${DIRECTORY}/data/imglist" | awk '{print $1}')
-      echo "Numlines: $numlines"
-      if [ $numlines -gt 0 ];then #if imglist contains any lines
-        awk -i inplace '! a[$0]++' "${DIRECTORY}/data/imglist" #remove duplicate lines
-        i=1
-        while [ $i -le $numlines ]; do #repeat until all lines are checked
-          line=$(sed -n "${i}p" < "${DIRECTORY}/data/imglist") #read that line of text file
-          #echo $line
-          if [ ! -f $line ];then #if line is file not found
-            #echo "not exist!"
-            sed -i "${i}d" "${DIRECTORY}/data/imglist" #delete the line
-          fi
-          i=$((i+1)) #increase line number by 1 to check the next one
-        done
-        imglist="$(cat ${DIRECTORY}/data/imglist | tr '\n' '!')"
-      fi
-    fi
+
+    #parse imglist
+    imglist="$(${DIRECTORY}/functions/imglist-parser || errorbox 'Failed to parse imglist!')"
     echo "parsed imglist to ${imglist}EOI"
     
     #PARSE ZIPLIST
@@ -114,7 +94,7 @@ while [ $repeat -eq 1 ];do
       numlines=$(wc -l "${DIRECTORY}/data/ziplist" | awk '{print $1}')
       echo "Numlines: $numlines"
       if [ $numlines -gt 0 ];then #if ziplist contains any lines
-        awk -i inplace '! a[$0]++' "${DIRECTORY}/data/ziplist" #remove duplicate lines
+        echo "$(sort "${DIRECTORY}/data/ziplist" | uniq)" > "${DIRECTORY}/data/ziplist" #remove duplicate lines
         i=1
         while [ $i -le $numlines ]; do #repeat until all lines are checked
           line=$(sed -n "${i}p" < "${DIRECTORY}/data/ziplist") #read that line of text file
@@ -127,6 +107,9 @@ while [ $repeat -eq 1 ];do
         done
         ziplist="$(cat ${DIRECTORY}/data/ziplist | tr '\n' '!')"
       fi
+    else
+      #create file
+      echo '' > "${DIRECTORY}/data/ziplist"
     fi
     echo "parsed ziplist to ${ziplist}EOZ"
     

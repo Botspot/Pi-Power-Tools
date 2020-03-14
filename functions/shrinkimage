@@ -11,7 +11,7 @@ else
   addmb=$2
 fi
 
-oops(){
+fatal(){
   echo -e "\n\e[41m${1}\e[49m\n"
   exit 1
 }
@@ -21,7 +21,7 @@ warn(){
 }
 
 if [ "$addmb" -lt 0 ];then
-  oops 'Cannot have a negative additional megabyte!'
+  fatal 'Cannot have a negative additional megabyte!'
 fi
 
 loopdev="$(sudo losetup -fP --show "$imagefile")"
@@ -36,7 +36,7 @@ echo "loop: $loopdev"
 
 partpath="${loopdev}p2"
 if [ ! -b $partpath ];then
-  oops 'Partition 2 does not exist.'
+  fatal 'Partition 2 does not exist.'
 fi
 
 #extend partition to eof
@@ -62,7 +62,7 @@ if [ $partstart -gt '500000' ];then
   true
   #partend must be valid
 else
-  oops 'Could not locate start of partition!'
+  fatal 'Could not locate start of partition!'
 fi
 
 echo '
@@ -73,12 +73,12 @@ i
 i
 2
 $((fsend*4096+(partstart-1)*512))b
-y" | sudo parted $loopdev ---pretend-input-tty resizepart 2 $((fsend*4096+(partstart-1)*512))b || oops "failed to shrink partition."
+y" | sudo parted $loopdev ---pretend-input-tty resizepart 2 $((fsend*4096+(partstart-1)*512))b || fatal "failed to shrink partition."
 
 echo '
 refreshing loop device'
 sudo losetup -d $loopdev || warn 'refreshing failed on step 1.'
-loopdev="$(sudo losetup -fP --show "$imagefile" || oops 'refreshing failed on step 2.')"
+loopdev="$(sudo losetup -fP --show "$imagefile" || fatal 'refreshing failed on step 2.')"
 
 partend="$(sudo fdisk -l $loopdev | grep $partpath | awk '{print $3}')"
 echo "partition end: ${partend}"
@@ -88,18 +88,18 @@ if [ $partend -gt '300000' ];then
   true
   #partend must be valid
 else
-  oops 'Could not locate end of partition!'
+  fatal 'Could not locate end of partition!'
 fi
 
 #chop off unused portion of image file
 echo '
 removing unused portion of file'
-truncate -s $(((partend+1)*512+(addmb)*1038*1024)) "$imagefile" || oops 'extend img failed.'
+truncate -s $(((partend+1)*512+(addmb)*1038*1024)) "$imagefile" || fatal 'extend img failed.'
 
 echo '
 refreshing loop device'
 sudo losetup -d $loopdev || warn 'refreshing failed on step 1.'
-loopdev="$(sudo losetup -fP --show "$imagefile" || oops 'refreshing failed on step 2.')"
+loopdev="$(sudo losetup -fP --show "$imagefile" || fatal 'refreshing failed on step 2.')"
 
 #extend partition to eof
 echo '
@@ -109,7 +109,7 @@ echo y | sudo parted $loopdev ---pretend-input-tty resizepart 2 100% || warn 'pa
 echo '
 refreshing loop device'
 sudo losetup -d $loopdev || warn 'refreshing failed on step 1.'
-loopdev="$(sudo losetup -fP --show "$imagefile" || oops 'refreshing failed on step 2.')"
+loopdev="$(sudo losetup -fP --show "$imagefile" || fatal 'refreshing failed on step 2.')"
 
 #expand filesystem
 echo '

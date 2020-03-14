@@ -6,27 +6,10 @@ DIRECTORY="$(dirname "$(dirname $0)")"
 #variable 1 is img file
 #if left blank prompt user
 if [ -z $1 ];then
-  #if imglist exists, ensure all lines contain valid files
-  if [ -f "${DIRECTORY}/imglist" ];then #if imglist exists
-    #number of lines in file
-    numlines=$(wc -l "${DIRECTORY}/imglist" | awk '{ print $1 }')
-    #echo $numlines
-    if [ $numlines -gt 0 ];then #if imglist contains any lines
-      awk -i inplace '! a[$0]++' "${DIRECTORY}/imglist" #remove duplicate lines
-      i=1
-      while [ $i -le $numlines ]; do #repeat until all lines are checked
-        line=$(sed -n "${i}p" < "${DIRECTORY}/imglist") #read that line of text file
-        #echo $line
-        if [ ! -f $line ];then #if line is file not found
-          #echo "not exist!"
-          sed -i "${i}d" "${DIRECTORY}/imglist" #delete the line
-        fi
-        i=$((i+1)) #increase line number by 1 to check the next one
-      done
-      imglist="$(cat ${DIRECTORY}/imglist | tr '\n' '!')"
-      imglist="${imglist::-1}"
-    fi
-  fi
+  
+  #parse imglist
+  imglist="$(${DIRECTORY}/functions/imglist-parser || errorbox 'Failed to parse imglist!')"
+  
   IMG="$(yad --title='Advanced Mount' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
   	--form --separator='\n' --width=500 --height=150\
   	--field="Paste path::CBE" "$imglist" \
@@ -41,7 +24,7 @@ if [ -z $1 ];then
   
   if [[ "$IMG" == *".img" ]] && [ -f "$IMG" ];then #ensure disk image exists
     echo "Disk image detected."
-    echo "$IMG" >> "${DIRECTORY}/imglist"
+    echo "$IMG" >> "${DIRECTORY}/data/imglist"
   else
     echo "No such file or directory."
     yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \

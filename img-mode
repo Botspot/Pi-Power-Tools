@@ -147,27 +147,10 @@ function download {
 #SELECT IMG
 function selectimg {
   while [ -z $img ];do
-  #if imglist exists, ensure all lines contain valid files
-  if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
-    #number of lines in file
-    numlines=$(wc -l "${DIRECTORY}/data/imglist" | awk '{ print $1 }')
-    #echo $numlines
-    if [ $numlines -gt 0 ];then #if imglist contains any lines
-      echo "$(sort "${DIRECTORY}/data/imglist" | uniq)" > "${DIRECTORY}/data/imglist" #remove duplicate lines
-      i=1
-      while [ $i -le $numlines ]; do #repeat until all lines are checked
-        line=$(sed -n "${i}p" < "${DIRECTORY}/data/imglist") #read that line of text file
-        #echo $line
-        if [ ! -f $line ];then #if line is file not found
-          #echo "not exist!"
-          sed -i "${i}d" "${DIRECTORY}/data/imglist" #delete the line
-        fi
-        i=$((i+1)) #increase line number by 1 to check the next one
-      done
-      imglist="$(cat ${DIRECTORY}/data/imglist | tr '\n' '!')"
-      imglist="${imglist::-1}"
-    fi
-  fi
+  
+  #parse imglist
+  imglist="$(${DIRECTORY}/functions/imglist-parser || errorbox 'Failed to parse imglist!')"
+  
   img=''
     img="$(yad --form --separator='\n' \
     	--title='Pi Power Tools - IMG Mode' --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
