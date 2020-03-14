@@ -19,8 +19,9 @@ if [ "$1" = 'menubutton' ];then
     true
   else
     echo "conf corrupted or nonexistent"
-        rm "${DIRECTORY}/data/home.conf"
-        echo "
+    rm "${DIRECTORY}/data/home.conf"
+    #make conf file
+    echo "
 IMG Mode
 FALSE
 
@@ -38,7 +39,7 @@ while true;do
   Version $LATEST_VER is available. Click Update to install it.
   "
     addbutton="--button=Update!${DIRECTORY}/icons/download.png!Installs the latest version of Pi Power Tools.:6"
-  elif [ "$(cat "${DIRECTORY}/data/home.conf" | sed -n 2p)" = 'TRUE' ];then
+  elif [ "$(cat "${DIRECTORY}/data/home.conf" | sed -n 3p)" = 'TRUE' ];then
     addbutton="--button=Update!${DIRECTORY}/icons/download.png!Click this to factory reset Pi Power Tools.:6"
   else
     addbutton=''
@@ -132,7 +133,7 @@ Console - no autologin"
         elif [ "$(echo "$output" | sed -n 5p)" = 'Console - no autologin' ];then
           echo "cli" > "${DIRECTORY}/data/vdesktop.conf"
         else
-          echo "Failed to parse vdesktop conf!"
+          echo "Failed to generate vdesktop config."
         fi
         
       fi
