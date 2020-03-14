@@ -24,7 +24,7 @@ echo 66
 echo "# Creating menu button..."
 echo "[Desktop Entry]
 Name=Pi Power Tools
-Comment=Manipulate .img files and usb drives
+Comment=General Purpose Raspbian Image & SD Card Manager
 Exec=${HOME}/Pi-Power-Tools/home menubutton
 Icon=${HOME}/Pi-Power-Tools/icons/logo-64.png
 Terminal=false
