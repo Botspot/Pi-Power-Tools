@@ -1,8 +1,19 @@
 #!/bin/bash
 DIRECTORY="$(dirname $0)"
 
-LATEST_VER="$(wget -qO- https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/version)"
+#check for ppt updates
+
+LATEST_VER="$(wget -qO- https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/data/version)"
 LOCAL_VER="$(head -n 1 "${DIRECTORY}/data/version")"
+
+#if latest version is not empty
+#                      and if local version is out of date
+if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
+  yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+  	--text="Version ${LATEST_VER} is available. Install now?" \
+  	--center --text-align=center \
+  	--button="Not now!${DIRECTORY}/icons/forward.png:1" --button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
+fi
 
 #if run as menubutton, open default startup window
 if [ "$1" = 'menubutton' ];then
@@ -34,7 +45,7 @@ fi
 "${DIRECTORY}/installgui" yad
 
 while true;do
-  if [ ! -z $LATEST_VER] && [ $LATEST_VER -gt $LOCAL_VER ];then
+  if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
     addtext="
   Version $LATEST_VER is available. Click Update to install it.
   "

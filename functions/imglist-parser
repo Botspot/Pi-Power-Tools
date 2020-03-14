@@ -23,8 +23,6 @@ if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
     imglist="$(cat ${DIRECTORY}/data/imglist | tr '\n' '!')"
     imglist="${imglist::-1}"
     echo "$imglist" #this is the output of the script
-  else
-    exit 1
   fi
 else
   #create file
