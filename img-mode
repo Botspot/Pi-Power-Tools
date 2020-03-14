@@ -146,7 +146,7 @@ function download {
 
 #SELECT IMG
 function selectimg {
-  while [ -z $img ];do
+  while [ -z "$img" ] || [ ! -f "$img" ];do
   
   #parse imglist
   imglist="$(${DIRECTORY}/functions/imglist-parser || errorbox 'Failed to parse imglist!')"
@@ -178,6 +178,17 @@ function selectimg {
     if [ $button -eq 0 ];then
       if [ -z $img ];then
         errorbox 'No image specified.'
+      else
+        #check if file:// appended to filename
+        if [[ "$img" == *"file://"* ]];then
+          img="${img:8}"
+          echo -e "removing file:// from filename"
+          #take off last letter
+          img="${img::-1}"
+        else
+          #remove blank line break
+          img="$(echo -e "$img" | sed -n 2p)"
+        fi
       fi
     fi
     
@@ -187,8 +198,7 @@ function selectimg {
       download
     fi
   done
-  #remove blank line break
-  img="$(echo "$img" | tail -n 1)"
+  echo "$img" >> "${DIRECTORY}/data/imglist"
 }
 
 if [ ! -z $1 ];then

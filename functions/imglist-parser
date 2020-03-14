@@ -21,11 +21,13 @@ if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
       i=$((i+1)) #increase line number by 1 to check the next one
     done
     imglist="$(cat ${DIRECTORY}/data/imglist | tr '\n' '!')"
-    imglist="${imglist::-1}"
-    echo "$imglist" #this is the output of the script
   fi
 else
   #create file
   echo '' > "${DIRECTORY}/data/ziplist"
   exit 1
 fi
+if [ ! -z "$imglist" ];then
+  imglist="${imglist::-1}"
+fi
+echo "$imglist" #this is the output of the script

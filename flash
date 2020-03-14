@@ -84,6 +84,11 @@ while [ $repeat -eq 1 ];do
 
     #parse imglist
     imglist="$(${DIRECTORY}/functions/imglist-parser || errorbox 'Failed to parse imglist!')"
+    
+    if [ ! -z "$imglist" ];then
+      imglist="${imglist}!"
+    fi
+    
     echo "parsed imglist to ${imglist}EOI"
     
     #PARSE ZIPLIST
@@ -110,6 +115,11 @@ while [ $repeat -eq 1 ];do
     else
       #create file
       echo '' > "${DIRECTORY}/data/ziplist"
+    fi
+    
+    if [ ! -z "$ziplist" ];then
+      ziplist="${ziplist::-1}"
+      ziplist="${ziplist}!"
     fi
     echo "parsed ziplist to ${ziplist}EOZ"
     

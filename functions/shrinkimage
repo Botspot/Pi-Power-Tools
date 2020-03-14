@@ -94,7 +94,7 @@ fi
 #chop off unused portion of image file
 echo '
 removing unused portion of file'
-truncate -s $(((partend+1)*512+(addmb)*1038*1024)) "$imagefile" || fatal 'extend img failed.'
+truncate -s $(((partend+1)*512+(addmb)*1050*1024)) "$imagefile" || fatal 'extend img failed.'
 
 echo '
 refreshing loop device'
