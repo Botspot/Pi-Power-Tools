@@ -257,7 +257,7 @@ while true; do
         
         #only try to mount if ok button was pressed
         if [ $? -eq 0 ];then
-          mkdir "$mntpnt"
+          sudo mkdir "$mntpnt"
           errorcode=$(sudo mount $output "$mntpnt" 2>&1)
           if [ ! $? -eq 0 ];then
             yad --title='Advanced Mount' --window-icon="${DIRECTORY}/icons/logo-64.png" \
