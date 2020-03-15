@@ -7,7 +7,7 @@
  - **Flash** - Flashes Raspbian directly from the Internet to the selected device.
  - **Mount** - Full control to manage loop devices and mountpoints.
  - **Edit** - Auto-creates a loop device for the disk image then opens it with Gparted.
- - **Resize** - Expand or shrink a disk image, thanks to RonR's [Image-utils](https://www.raspberrypi.org/forums/viewtopic.php?t=247568).
+ - **Resize** - Add or remove free space from a disk image.
 
 ## To install:
 #### Run this in the terminal:
@@ -57,19 +57,7 @@ Before you can see that above page, you first have to select an img.
 ![download](https://i.ibb.co/XD8FgkN/download.png)
 Download mode has been tuned for **maximum speed**.  
 It downloads, buffers, and extracts, simultaneously.
-Benchmarks made on a 4GB Pi 4:
-
-|Raspbian|Total Time|
-|--|--|
-|Buster Full|286 seconds|
-|Buster|140 seconds|
-|Buster Lite|88 seconds|
-Compare that to using `chromium-browser` and `xarchiver`: (on the same Pi 4)
-|Raspbian|Download Time|Extract Time|Total Time|
-|--|--|--|--|
-|Buster Full|211 seconds|325 seconds|536 seconds|
-|Buster|108|177|285|
-|Buster Lite|91|52|143|
+![benchmark](https://i.ibb.co/25KV76J/benchmark.png)
 
 After a disk image has been selected, this main page appears:
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)
@@ -81,8 +69,10 @@ After a disk image has been selected, this main page appears:
     - **Edit**: Modify the partitions using Gparted.
     - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.
     - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.![advmount](https://i.ibb.co/PQXPL1M/advmount.png)
-    - **Shrink**: Removes all free space from the selected image. If enabled, `zerofree` will run afterwards to remove unused blocks from the disk image. <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
-   - **1 GB Free**: Adds one gigabyte of free space to the root partition. It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
+    - **Shrink**: Removes all free space from the selected image. If enabled, `zerofree` will run afterwards to remove unused blocks from the disk image. 
+      - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
+   - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
+     - It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
 ## Home --> IMG/USB Mode --> Flash
 ![flash tool](https://i.ibb.co/YcrCspx/flash.png)
 Select an input disk image and an output usb drive. The filesystem root device is not listed.  
