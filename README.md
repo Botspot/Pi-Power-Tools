@@ -13,9 +13,8 @@
 #### Run this in the terminal:
 `wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
 
-After installing, you can run **Pi Power Tools** from either Menu --> Accessories or from the desktop button:
-
-![desktop button](https://i.ibb.co/vwJ4sQw/desktop.png)  
+After installing, Pi Power Tools can be launched from the Menu:
+![menu](https://i.ibb.co/PQthp6N/menu.png)  
 
 ## To uninstall:
 ```
@@ -26,25 +25,36 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 ---
 # Instructions:
 Pro tip: Most buttons display an explanation if you move your mouse over them.
-## Tabs of the PPT Main Window:
  - **Home**  
-![home page](https://i.ibb.co/6FhbPjD/main1.png)  
-Nothing much to do here. Clicking that dark blue link brings you to this page.  
+![home page](https://i.ibb.co/vz4yR40/home.png)  
+The menu button opens this window by default. Enter IMG Mode or USB Mode from here. The Update button will appear if an update is available.  
+ - **Settings**  
+Customize some aspects of Pi Power Tools.  
+Currently, you can change what the menu button opens by default (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.
 
- - **USB Drive**  
-![usb drive page](https://i.ibb.co/Br4q82p/main2.png)  
-Select a USB drive in the list, then click one of the action buttons on the bottom.  
+ - **USB Mode**  
+Manage storage devices connected to your Pi.  
+![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
+Select a drive in the list, then click an action button on the bottom.  
 *Please note that your Pi's root device (/dev/mmcblk0) cannot be flashed or booted.*  
+Buttons explanations:  
+ - - Home: Back to the home window.  
+ - - Refresh: Check for any newly inserted storage devices.  
+ - - Flash: Copy everything from an img to the selected device.  
+ - - Boot: Attempt to "boot" the selected device using a virtual desktop. Instead of a Virtual Machine, this method of booting runs at 100% native speed (no emulation), because the guest runs the same kernel as the host device. Therefore, only Raspbian is supported, as other OSes require other kernels.  
+ - - View: Mounts the device to `/media/pi/pi-power-tools`.  
+![view files](https://i.ibb.co/RgbKJff/view-files.png)  
+Intended for Raspbian devices only, as this button assumes there are 2 partitions. (and mounts partiton 1 to `/media/pi/pi-power-tools/boot`)
+ - - Edit: Modify the partitions using Gparted.
+![gparted](https://i.ibb.co/pww2C9h/gparted.png)
+ - **IMG Mode**  
+Customize Raspbian Images.
+![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
+Before you can see that above page, you first have to select an img.  
+![img mode page 1](https://i.ibb.co/TLcT6cD/img-mode1.png)  
 
- - **IMG File**  
-![img file page](https://i.ibb.co/k5F0H1X/main3.png)  
-Two ways to open a disk image:  
-    • Paste the file's full path in the "Paste Path:" field.  
-You can copy the path using the file manager:  
-![pcmanfm copy paths](https://i.ibb.co/R0LWpjc/copy-paths.png)  
-*Pro tip: click the arrow on the right to select previously used disk images.*  
-    • Or, click the button in the "Find one:" field to open a disk image.  
-The two lower buttons each open tools that only apply to disk images.  
+Click the arrow to see previously used disk images.
+
 ---
 ## Action buttons of the Main Window:  
 
