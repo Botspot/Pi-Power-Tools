@@ -27,10 +27,10 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 ## Home
 ![home page](https://i.ibb.co/vz4yR40/home.png)  
 The menu button opens this window by default. Enter IMG Mode or USB Mode from here. The Update button will appear if an update is available.  
-### Home --> Settings
+### Settings
 ![settings](https://i.ibb.co/Cz9YMDj/settings.png)  
 Currently, you can change what the menu button opens by default, (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
-## Home --> USB Mode
+## USB Mode
 Manage storage devices connected to your Pi.  
 ![usb mode](https://i.ibb.co/vJ68mRY/usb.png)
 Select a drive in the list, then click an action button on the bottom.  
@@ -43,7 +43,7 @@ Select a drive in the list, then click an action button on the bottom.
     - **View**: Mounts the device to `/media/pi/pi-power-tools`.  
 *Intended for Raspbian devices only, as this button assumes there are 2 partitions. (and mounts partition 1 to `/media/pi/pi-power-tools/boot`)*
     - **Edit**: Modify the partitions using Gparted.
-## Home --> IMG Mode
+## IMG Mode
 Customize Raspbian Images.  
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
 Before you can see that above page, you first have to select an img.  
@@ -77,21 +77,34 @@ After a disk image has been selected, this main page appears:
 ![flash tool](https://i.ibb.co/YcrCspx/flash.png)
 Select an input disk image and an output usb drive. The filesystem root device is not listed.  
 Pro tip: *In the `From` field, you can paste the path to a ZIP file.*  
-In addition to previously used img and zip files, there are **three download options**:
+In addition to any previously used img and zip files, there are **three download options**:
 ![flash download options](https://i.ibb.co/3RRfnrR/flash-dl-opts.png)
-If you chose to Download, this window will appear next asking which download program you want.  
+If Download is selected, this window will appear next asking which download mode you want.  
 ![Flash tool second page](https://i.ibb.co/dmL3b7s/flash2.png)  
-Fast Internet + fast usb device = **150 seconds for Raspbian lite**.  
+The first mode is slightly faster than the second one.
+Breakdown of the pros and cons:
+| Faster mode | Slower mode|
+|--|--|
+|For Pies that don't have sufficient free space to hold a large disk image|You keep the downloaded image for later.|
+|Better for a single flash|Better for flashing multiple SD cards
 
+Concerning speed, here are benchmarks made on a 4GB Pi 4:
+(in seconds)
+||Faster Mode:|Slower mode:|
+|--|--|--|
+|Raspbian Full|387|816|
+|Raspbian|205|393|
+|Raspbian Lite|102|184|
 
- - **Boot**  
-Select a device (img file or usb drive), then click Boot. With this handy button, you can customize a disk image before flashing it to your SD card.  
-A Console will appear and display the boot text like this:  
+# Button instructions:
+## Boot
+Select a device (img file or usb drive), then click Boot. With this handy button, you can customize a disk image graphically before flashing it to your SD card.  
+First, the Console will appear and display the boot text like this:  
 ![boot console](https://i.ibb.co/PNnbW7K/console.png)  
 *Under certain circumstances, Vdesktop will ask permission to change a UUID or a machine-id. This rarely corrupts anything, so typing `y` is usually appropriate.*  
-After it has booted, a window similar to VNC will open and display the desktop.  
+After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](##Settings), a window similar to VNC will open and display the desktop.  
 ![xephyr](https://i.ibb.co/j4snZ8z/xephyr.png)  
-*It is a known issue that the browser crashes with the `Aw, Snap!` error.*  
+*It is a [known issue](https://github.com/Botspot/vdesktop/issues/3) that the browser crashes with the `Aw, Snap!` error.*  
 
  - **View**  
 Mounts the selected device to `/media/pi/pi-power-tools`.  
