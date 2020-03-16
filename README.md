@@ -39,7 +39,7 @@ Select a drive in the list, then click an action button on the bottom.
    - **Home**: Back to the home window.  
    - **Refresh**: Check for any newly inserted storage devices.  
    - **Flash**: Copy everything from an img to the selected device.  
-   - **Boot**: Attempt to "boot" the selected device using a virtual desktop. Instead of a Virtual Machine, this technique runs at 100% native speed (no emulation), because the guest runs the same kernel as the host device. Therefore, only Raspbian is supported, as other OSes require other kernels.  
+   - **Boot**: Attempt to "boot" the selected device using a virtual desktop.
     - **View**: Mounts the device to `/media/pi/pi-power-tools`.  
 *Intended for Raspbian devices only, as this button assumes there are 2 partitions. (and mounts partition 1 to `/media/pi/pi-power-tools/boot`)*
     - **Edit**: Modify the partitions using Gparted.
@@ -69,18 +69,17 @@ After a disk image has been selected, this main page appears:
     - **Edit**: Modify the partitions using Gparted.
     - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.
     - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.![advmount](https://i.ibb.co/PQXPL1M/advmount.png)
-    - **Shrink**: Removes all free space from the selected image. If enabled, `zerofree` will run afterwards to remove unused blocks from the disk image. 
+    - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
       - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
    - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
      - It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
-## Home --> IMG/USB Mode --> Flash
-![flash tool](https://i.ibb.co/YcrCspx/flash.png)
-Select an input disk image and an output usb drive. The filesystem root device is not listed.  
-Pro tip: *In the `From` field, you can paste the path to a ZIP file.*  
+## Flash
+![flash tool](https://i.ibb.co/YcrCspx/flash.png)  
+Select an input disk image and an output usb drive. The filesystem root device (`/dev/mmcblk0`) cannot be flashed and so is not listed.  
 In addition to any previously used img and zip files, there are **three download options**:
-![flash download options](https://i.ibb.co/3RRfnrR/flash-dl-opts.png)
+![flash download options](https://i.ibb.co/3RRfnrR/flash-dl-opts.png)  
 If Download is selected, this window will appear next asking which download mode you want.  
-![Flash tool second page](https://i.ibb.co/dmL3b7s/flash2.png)  
+![Flash tool second page](https://i.ibb.co/dmL3b7s/flash2.png)    
 The first mode is slightly faster than the second one.
 Breakdown of the pros and cons:
 | Faster mode | Slower mode|
@@ -96,80 +95,111 @@ Concerning speed, here are benchmarks made on a 4GB Pi 4:
 |Raspbian|205|393|
 |Raspbian Lite|102|184|
 
-# Button instructions:
+# Explanations for some buttons:
 ## Boot
-Select a device (img file or usb drive), then click Boot. With this handy button, you can customize a disk image graphically before flashing it to your SD card.  
+With this handy button, you can customize a disk image graphically before flashing it to your SD card.  
+Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.  
 First, the Console will appear and display the boot text like this:  
 ![boot console](https://i.ibb.co/PNnbW7K/console.png)  
-*Under certain circumstances, Vdesktop will ask permission to change a UUID or a machine-id. This rarely corrupts anything, so typing `y` is usually appropriate.*  
-After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](#Settings), a window similar to VNC will open and display the desktop.  
+
+> Under certain circumstances, Vdesktop will ask permission to change a UUID or a machine-id. This rarely corrupts anything, so typing `y` is
+> usually appropriate.
+
+After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](#settings), a window similar to VNC will open and display the desktop.  
 ![xephyr](https://i.ibb.co/j4snZ8z/xephyr.png)  
-*It is a [known issue](https://github.com/Botspot/vdesktop/issues/3) that the browser crashes with the `Aw, Snap!` error.*  
 
- - **View**  
+> It is a [known issue](https://github.com/Botspot/vdesktop/issues/3) that the browser crashes with the `Aw, Snap!` error.
+
+## View
 Mounts the selected device to `/media/pi/pi-power-tools`.  
-![view dialog](https://i.ibb.co/7r3Sc5Z/view-dialog.png)  
-When you close the above window, the selected device will be unmounted (ejected).  
+![view dialog](https://i.ibb.co/RgbKJff/view-files.png)  
+When you close the `Viewing /dev/sdX`, the selected device will be unmounted (ejected).  
 
- - **Edit**  
-Lets you edit the partitions of the selected device.  
-![gparted opening a disk image](https://i.ibb.co/c1YNB2K/gparted.png)  
-If Gparted is not already installed, you will be prompted to install it.  
----
-## Image-specific tool buttons:  
-![screenshot](https://i.ibb.co/0ccDxC9/image-specific-tools.png)  
- - **Image-Utils GUI**  
-[RonR's image-utils](https://www.raspberrypi.org/forums/viewtopic.php?t=247568) wrapped in a graphical frontend.  
-![home page](https://i.ibb.co/1q0SMFV/image-utils1.png)  
-Paste in a location to a disk image, then click an action button. The **settings tab** lets you customize some aspects of the tools.  
-![image-utils settings tab](https://i.ibb.co/wBfntjF/image-utils2.png)  
- - **Advanced Mount**  
+## Edit
+Lets you edit the partitions of the selected device using `gparted`.  
+![gparted opening a disk image](https://i.ibb.co/pww2C9h/gparted.png)  
+  
+## Advanced Mount
 Fine-tune control over loop devices and mountpoints for disk images.  
 Select the disk image you want:  
 ![image-utils settings tab](https://i.ibb.co/Tk5R1wv/advmount-page-1.png)  
-If there are multiple loop devices associated with it, you will be prompted to choose one. You can also delete unwanted loop devices:  
-![image-utils settings tab](https://i.ibb.co/84zD9yk/advmount-page-2.png)  
+If there are multiple loop devices associated with it, you will be prompted to selected one.  
+![image-utils settings tab](https://i.ibb.co/84zD9yk/advmount-page-2.png)    
 Now you can mount each partition where you want to:  
-![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)  
+![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)    
 When you're finished, be sure to **click Delete** to detach the loop device.
 ---
 ## For those who are interested in the inner workings of Pi Power Tools:
 Pro tip: *There are many comments in the shell scripts. Not only does this assist debugging, it also makes most of it self-explanatory.*  
 ### Directory Tree:
+
+    /home/pi/Pi-Power-Tools
+    ├── data
+    │   ├── home.conf
+    │   ├── imglist
+    │   ├── mirrors
+    │   ├── mountpoint
+    │   ├── part-table.img
+    │   ├── vdesktop.conf
+    │   ├── version
+    │   └── ziplist
+    ├── flash
+    ├── functions
+    │   ├── advmount
+    │   ├── buffer
+    │   ├── edit
+    │   ├── imglist-parser
+    │   ├── restore-pt
+    │   ├── shrinkimage
+    │   ├── zerofree
+    │   └── zerofree_runner
+    ├── home
+    ├── icons
+    ├── img-mode
+    ├── installedpackages
+    ├── installgui
+    ├── README.md
+    ├── update
+    ├── usb-mode
+    ├── vdesktop
+    │   ├── profile
+    │   ├── README.md
+    │   ├── shadow
+    │   ├── vdesktop
+    │   └── version
+    └── version
+
  - **Pi-Power-Tools** - This is the main folder that stores everything.
  - Scripts:
-   - **advmount** - Advanced img mount tool  
-   - **image-utils-gui** - RonR's image-utils gui program. (The actual scripts are stored in the image-utils folder.) 
    - **installgui** - This prompts for packages to be installed
-   - **flash** - This is the flash tool
+   - **flash** - This is the [Flash tool](#flash).
    - **update** - This script is what installs/updates Pi Power Tools.
-   - **pi-power-tools** - This is the main tool.
+   - **home** - This is the main [Home](#home)page.
  - Other files:
    - **image-utils.conf** - Saves the settings of image-utils.
-   - **installedpackages** #Keeps a record of what the update script installed.
-   - **README.md**         #This is what you're reading right now.
-   - **version**           #Lets Pi Power Tools keep track of what version it is to see when an update is available.
-   - **imglist**           #Stores previously used disk images.
+   - **installedpackages** - Keeps a record of what the update script installed.
+   - **README.md** - You are reading this right now.
+   - **version** - Lets Pi Power Tools keep track of what version it is to see when an update is available. (exists only for backwards-compatibility)
+   - **imglist** - Stores previously used disk images.
  - Folders:
-   - **icons** - Stores all the icons used in the user interfaces of Pi Power Tools.
-   - **image-utils**       #Ships empty, but the `get-latest-image-utils` script populates this folder with the below files:
-   - Scripts:
-     - **image-backup** - Backs up the running operating system to the specified disk image. Disk image must be located on /mnt or /media.
-     - **image-check** - Returns a bunch of data about the specified disk image.
-     - **image-compare** - Lists the files image-backup would copy over if run.
-     - **image-mount** - Mounts an img to a specified mountpoint. Not available in the GUI tool since it is buggy.
-     - **image-set-ptuuid** - Not used in the GUI tool.
-     - **image-shrink** - Makes the specified image as small as possible. An optional second word specifies additional free space in MB.
+ - **functions** - Stores sub-scripts that do certain things.
+   - **advmount** - The [Advanced Mount](#advanced-mount) tool.
+ - **data** - Stores configuration files
+   - **home.conf** - Stores the configuration from the [Settings window](#settings).
+   - **imglist** - Keeps track of what disk images have been used. 
+   - **mirrors** - URLs, sizes, and names of download sites. Feel free to add your own.
+   - **mountpoint** - Change where to mount to. Default is `/media/pi/pi-power-tools`.
+   - **part-table.img** - The default partition table extracted from Raspbian Buster Full. Used by the Reset PT button in [IMG Mode](#img-mode).
+     - **vdesktop.conf** - Stores the boot mode for `vdesktop`. Possible values are `gui`, `cli`, and `cli-login`.
+     - **version** - The new location for the version file. Compared against the online versiont o check for updates.
+     - **ziplist** - Exactly the same as `imglist`, but stores entries for previously used ZIP files instead. Currently only used by [Flash](#flash).
+   - **icons** - Stores all the icons used in the user interface of Pi Power Tools.
+   - **vdesktop** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo]([https://github.com/Botspot/vdesktop](https://github.com/Botspot/vdesktop)):
+   - Script:
+     - **vdesktop** - The main script
    - Other files:
-     - **README.txt** - RonR wrote these instructions for image-tools.
-   - **vdesktop** - Ships empty, but `installgui` populates this folder with the below files:
-   - Scripts:
-     - **rc.local** - This is temporarily mounted to the selected device during boot to display the blue message in the boot text.
-     - **vdesktop** - The main boot script
-   - Other files:
-     - **profile** - This is temporarily mounted to the selected device to start the desktop session.
-     - **autologin** - The existence of this file tells vdesktop to login automatically.
-     - **shadow** - This is mounted to /etc/shadow of the selected device to ensure the pi's password is raspberry.
+     - **profile** - This is temporarily mounted to the selected device to start the desktop session. (If enabled via [Settings](#settings))
+     - **shadow** - This is mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`.
      - **version** - Lets Vdesktop keep track of what version it is to see when an update is available.
      - **README.md** - The instructions for running vdesktop standalone
 
