@@ -27,7 +27,7 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 ## Home
 ![home page](https://i.ibb.co/vz4yR40/home.png)  
 The menu button opens this window by default. Enter IMG Mode or USB Mode from here. The Update button will appear if an update is available.  
-# Settings
+### Settings
 ![settings](https://i.ibb.co/Cz9YMDj/settings.png)  
 Currently, you can change what the menu button opens by default, (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
 ## USB Mode
