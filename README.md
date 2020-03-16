@@ -102,7 +102,7 @@ Select a device (img file or usb drive), then click Boot. With this handy button
 First, the Console will appear and display the boot text like this:  
 ![boot console](https://i.ibb.co/PNnbW7K/console.png)  
 *Under certain circumstances, Vdesktop will ask permission to change a UUID or a machine-id. This rarely corrupts anything, so typing `y` is usually appropriate.*  
-After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](##Settings), a window similar to VNC will open and display the desktop.  
+After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](### Settings), a window similar to VNC will open and display the desktop.  
 ![xephyr](https://i.ibb.co/j4snZ8z/xephyr.png)  
 *It is a [known issue](https://github.com/Botspot/vdesktop/issues/3) that the browser crashes with the `Aw, Snap!` error.*  
 
