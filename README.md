@@ -23,26 +23,24 @@ rm -rf ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old
 rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 ```
 ---
-# Instructions:
+# Instructions
+### Table of Contents
+ - [Home](#home)
+ - [Settings](#settings)
+ - [IMG Mode](#img-mode)
+ - [USB Mode](#usb-mode)
+ - [Flash](#flash)
+ - [Button explanations](#explanations-for-some-buttons)
+ - [Under the hood](#under-the-hood)
+ - [Q&A](#qa)
 ## Home
 ![home page](https://i.ibb.co/vz4yR40/home.png)  
 The menu button opens this window by default. Enter IMG Mode or USB Mode from here. The Update button will appear if an update is available.  
 ### Settings
 ![settings](https://i.ibb.co/Cz9YMDj/settings.png)  
 Currently, you can change what the menu button opens by default, (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
-## USB Mode
-Manage storage devices connected to your Pi.  
-![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
-Select a drive in the list, then click an action button on the bottom.  
-*Please note that your Pi's root device (`/dev/mmcblk0`) cannot be flashed or booted.*  
-**Buttons**:  
-   - **Home**: Back to the home window.  
-   - **Refresh**: Check for any newly inserted storage devices.  
-   - **Flash**: Copy everything from an img to the selected device.  
-   - **Boot**: Attempt to "boot" the selected device using a virtual desktop.
-    - **View**: Mounts the device to `/media/pi/pi-power-tools`.  
-*Intended for Raspbian devices only, as this button assumes there are 2 partitions. (and mounts partition 1 to `/media/pi/pi-power-tools/boot`)*
-    - **Edit**: Modify the partitions using Gparted.
+
+
 ## IMG Mode
 Customize Raspbian Images.  
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)    
@@ -73,6 +71,19 @@ After a disk image has been selected, this main page appears:
       - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
    - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
      - It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
+## USB Mode
+Manage storage devices connected to your Pi.  
+![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
+Select a drive in the list, then click an action button on the bottom.  
+*Please note that your Pi's root device (`/dev/mmcblk0`) cannot be flashed or booted.*  
+**Buttons**:  
+   - **Home**: Back to the home window.  
+   - **Refresh**: Check for any newly inserted storage devices.  
+   - **Flash**: Copy everything from an img to the selected device.  
+   - **Boot**: Attempt to "boot" the selected device using a virtual desktop.  
+    - **View**: Mounts the device to `/media/pi/pi-power-tools`.  
+*Intended for Raspbian devices only, as this button assumes there are 2 partitions. (and mounts partition 1 to `/media/pi/pi-power-tools/boot`)*  
+    - **Edit**: Modify the partitions using Gparted.  
 ## Flash
 ![flash tool](https://i.ibb.co/YcrCspx/flash.png)  
 Select an input disk image and an output usb drive. The filesystem root device (`/dev/mmcblk0`) cannot be flashed and so is not listed.  
@@ -131,7 +142,7 @@ Now you can mount each partition where you want to:
 When you're finished, be sure to **click Delete** to detach the loop device.
 
 ---
-## For those who are interested in the inner workings of Pi Power Tools:
+## Under the hood
 Pro tip: *There are many comments in the shell scripts. Not only does this assist debugging, it also makes most of it self-explanatory.*  
 ### Directory Tree:
 
