@@ -1,5 +1,5 @@
-![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 # Pi Power Tools
+![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 ## The Ultimate Swiss Army Knife for Raspbian Disk Images and SD Cards.
 
 ### No other tool can do any of these:
@@ -68,7 +68,7 @@ After a disk image has been selected, this main page appears:
     - **View**: Mounts the image to `/media/pi/pi-power-tools` so you can modify the filesystem. [Details](#view)  
     - **Edit**: Modify the partitions using Gparted. [Details](#edit)  
     - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.  
-    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.  ![advmount](https://i.ibb.co/PQXPL1M/advmount.png)  
+    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.  [Details](#advanced-mount)  ![advmount](https://i.ibb.co/PQXPL1M/advmount.png)  
     - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
       - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
    - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
@@ -121,11 +121,11 @@ Lets you edit the partitions of the selected device using `gparted`.
 ![gparted opening a disk image](https://i.ibb.co/pww2C9h/gparted.png)  
   
 ## Advanced Mount
-Fine-tune control over loop devices and mountpoints for disk images.  
-Select the disk image you want:  
-![image-utils settings tab](https://i.ibb.co/Tk5R1wv/advmount-page-1.png)  
+Fine-tune control over loop devices and mountpoints for disk images.    
 If there are multiple loop devices associated with it, you will be prompted to select one.  
-![image-utils settings tab](https://i.ibb.co/84zD9yk/advmount-page-2.png)    
+It'e a good idea to delete all loop devices except for the top one on the list.  
+
+![image-utils settings tab](https://i.ibb.co/ftn0JXz/loop-select.png)    
 Now you can mount each partition where you want to:  
 ![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)    
 When you're finished, be sure to **click Delete** to detach the loop device.
@@ -135,7 +135,7 @@ When you're finished, be sure to **click Delete** to detach the loop device.
 Pro tip: *There are many comments in the shell scripts. Not only does this assist debugging, it also makes most of it self-explanatory.*  
 ### Directory Tree:
 
- - **Pi-Power-Tools/** - This is the main folder that stores everything.
+**Pi-Power-Tools/** - This is the main folder that stores everything.
 > During an update, the old folder is renamed to Pi-Power-Tools.old/
  - Scripts:
    - **installgui** - This prompts for packages to be installed
@@ -147,7 +147,7 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
  - Other files:
    - **installedpackages** - Keeps a record of what the update script installed.
    - **README.md** - You are reading [this](https://github.com/Botspot/Pi-Power-Tools/blob/master/README.md) right now.
-   - **version** - Lets Pi Power Tools keep track of what version it is to see when an update is available. (exists only for backwards-compatibility)
+   - **version** - Lets Pi Power Tools keep track of what version it is to see when an update is available. (exists <ins>only</ins> for backwards-compatibility)
  - Folders:
  - **functions/** - Stores sub-scripts that do certain things.
    - **advmount** - The [Advanced Mount](#advanced-mount) tool.
