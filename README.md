@@ -1,5 +1,5 @@
-# Pi Power Tools
 ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
+# Pi Power Tools
 ## The Ultimate Swiss Army Knife for Raspbian Disk Images and SD Cards.
 
 ### No other tool can do any of these:
@@ -182,8 +182,8 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
 ## Q&A
  - Q: Unique logo. What inspired you?  
 ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
-**A: It's a combination of BB-8, the RPi logo, and a saw blade.**  
- - Q: What made you develop this tool?  
-**A: I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so ridiculously tedious, that I realized there must be a better way.**  
+> It's a combination of BB-8, the RPi logo, and a saw blade.
+ - What made you develop this tool?  
+> I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so ridiculously tedious, that I realized there must be a better way.
  - Q: How long did it take to program this?  
-**A: Several months. But it was entirely worth the effort.**  
+> Several months. But it was entirely worth the effort.
