@@ -60,30 +60,30 @@ It downloads, buffers, and extracts, simultaneously.
 After a disk image has been selected, this main page appears:
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
 **Buttons**:
-   - **Back**: Back to the image selection window.  
-   - **Flash**: Copy everything from the selected img to a device. [Details](#flash)  
-   - **Boot**: Attempt to "boot" the selected device using a virtual desktop. [Details](#boot)  
-    - **View**: Mounts the image to `/media/pi/pi-power-tools` so you can modify the filesystem. [Details](#view)  
-    - **Edit**: Modify the partitions using Gparted. [Details](#edit)  
-    - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.  
-    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.  [Details](#advanced-mount)  ![advmount](https://i.ibb.co/PQXPL1M/advmount.png)  
-    - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
-      - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
-   - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
-     - It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
+ - **Back**: Back to the image selection window.  
+ - **Flash**: Copy everything from the selected img to a device. [Details](#flash)  
+ - **Boot**: Attempt to "boot" the selected device using a virtual desktop. [Details](#boot)  
+ - **View**: Mounts the image to `/media/pi/pi-power-tools` so you can modify the filesystem. [Details](#view)  
+ - **Edit**: Modify the partitions using Gparted. [Details](#edit)  
+ - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.  
+ - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.  [Details](#advanced-mount)    
+  - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
+    - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
+ - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
+   - It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
 ## USB Mode
 Manage storage devices connected to your Pi.  
 ![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
 Select a drive in the list, then click an action button on the bottom.  
 *Please note that your Pi's root device (`/dev/mmcblk0`) cannot be flashed or booted.*  
 **Buttons**:  
-   - **Home**: Back to the home window.  
+   - **Home**: Back to the [home window](#home).  
    - **Refresh**: Check for any newly inserted storage devices.  
-   - **Flash**: Copy everything from an img to the selected device.  
-   - **Boot**: Attempt to "boot" the selected device using a virtual desktop.  
-    - **View**: Mounts the device to `/media/pi/pi-power-tools`.  
+   - **Flash**: Copy everything from an img to the selected device. [Details](#flash)  
+   - **Boot**: Attempt to "boot" the selected device using a virtual desktop. [Details](#boot)  
+   - **View**: Mounts the device to `/media/pi/pi-power-tools`. [Details](#view)  
 *Intended for Raspbian devices only, as this button assumes there are 2 partitions. (and mounts partition 1 to `/media/pi/pi-power-tools/boot`)*  
-    - **Edit**: Modify the partitions using Gparted.  
+   - **Edit**: Modify the partitions using Gparted. [Details](#edit)  
 ## Flash
 ![flash tool](https://i.ibb.co/YcrCspx/flash.png)  
 Select an input disk image and an output usb drive. The filesystem root device (`/dev/mmcblk0`) cannot be flashed and so is not listed.  
@@ -195,6 +195,6 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
 ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 > It's a combination of BB-8, the RPi logo, and a saw blade.
  - What made you develop this tool?  
-> I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so ridiculously tedious, that I realized there must be a better way.
+> I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so tedious that I realized there must be a better way.
  - Q: How long did it take to program this?  
 > Several months. But it was entirely worth the effort.
