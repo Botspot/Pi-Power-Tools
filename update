@@ -1,8 +1,10 @@
 #!/bin/bash
 
-rm "${HOME}/logo-64.png"
+rm ${HOME}/logo-64.png
 #get icon ahead of time so zenity can use it
 wget https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/icons/logo-64.png
+
+trap "rm ${HOME}/logo-64.png" EXIT
 
 (
 echo 0
@@ -12,15 +14,19 @@ cd $HOME
 rm -rf ${HOME}/Pi-Power-Tools.old
 mv -f ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old 2>/dev/null
 git clone https://github.com/Botspot/Pi-Power-Tools || exit 1
+sleep 3
+
+echo 25
+echo "# Downloading Vdesktop..."
 cd ${HOME}/Pi-Power-Tools
 git clone https://github.com/Botspot/vdesktop || exit 1
-sleep 5
+sleep 1
 
-echo 33
+echo 50
 echo "# Click Yes to install required packages."
 ${HOME}/Pi-Power-Tools/installgui "yad" || exit 0
 
-echo 66
+echo 75
 echo "# Creating menu button..."
 echo "[Desktop Entry]
 Name=Pi Power Tools
@@ -40,6 +46,5 @@ echo -e "# Finished!    Pi Power Tools is located in Menu --> Accessories."
 #sleep 5
 ) |
 zenity --progress --title='PPT Installer' --window-icon="${HOME}/logo-64.png" \
-	--width=300 --auto-kill --ok-label=Close 2>/dev/null
-rm "${HOME}/logo-64.png"
+	--width=300 --ok-label=Close 2>/dev/null
 #${HOME}/Pi-Power-Tools/pi-power-tools &
