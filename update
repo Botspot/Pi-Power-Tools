@@ -18,7 +18,7 @@ sleep 5
 
 echo 33
 echo "# Click Yes to install required packages."
-${HOME}/Pi-Power-Tools/installgui "yad systemd-container xserver-xephyr expect" || exit 0
+${HOME}/Pi-Power-Tools/installgui "yad" || exit 0
 
 echo 66
 echo "# Creating menu button..."
