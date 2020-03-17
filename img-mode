@@ -43,7 +43,7 @@ function download {
   while [ $repeat = 1 ];do
     output="$(echo -e "$downloadlist" | yad --list --separator='\n' --center --height=220 --width=700 \
     	--title='Download new IMG' --window-icon="${DIRECTORY}/icons/logo-64.png" \
-    	--text="Select IMG to download." --column=:IMG --column=Name --column=Size:SZ --column=URL \
+    	--text="Select IMG to download." --column=:IMG --column=Name --column='Bytes' --column=URL \
     	--button='Back'!"${DIRECTORY}/icons/back.png"!:1 \
     	--button='Download'!"${DIRECTORY}/icons/download.png":0 \
     	2>/dev/null)"
@@ -61,10 +61,13 @@ function download {
     else
       
       dlname="$(echo "$output" | sed -n 2p)"
-      #dlsize="$(echo "$output" | sed -n 3p)"
+      dlsize="$(echo "$output" | sed -n 3p)"
       dlurl="$(echo "$output" | sed -n 4p)"
-      dlsize="$(wget -qO- "$dlurl" | dd bs=1M count=1 | busybox unzip -lq - | sed -n '3p' | awk '{print $1}')"
-      dlfilename="$(wget -qO- "$dlurl" | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n '3p' | awk '{print $4}')"
+      
+      #getting the filesize over the internet doesn't work for Raspbian Full for some reason.
+      #dlsize="$(wget -qO- "$dlurl" | dd bs=1M count=1 | busybox unzip -lq - | sed -n 3p | awk '{print $1}')"
+      
+      dlfilename="$(wget -qO- "$dlurl" | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n 3p | awk '{print $4}')"
       
       echo "Download URL: $dlurl"
       echo "Download size: $dlsize"
@@ -104,13 +107,13 @@ function download {
     sleep 0.1
   done &
   childpid=$!
-  
   trap "kill $childpid" EXIT
+  
   #add first 100 mb to cache. This speeds the download process.
   wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
+  
+  trap "killall wget" EXIT
   wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | dd of="${HOME}/download-img/ppt-dl-${dlfilename}" bs=10M
-  trap "kill $!" EXIT
-  #wget -q "$dlurl" | busybox unzip -
   kill "$childpid"
   
   sleep 5
@@ -135,7 +138,8 @@ function download {
   yad --progress --title="Downloading $dlname" --auto-close --auto-kill --center \
   	--window-icon="${DIRECTORY}/icons/logo-64.png" \
   	--button='Cancel'!"${DIRECTORY}/icons/exit.png":1 \
-  	2>/dev/null || exit 0
+  	2>/dev/null || echo 'canceled'
+  echo "closed"
   endseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
   (echo "# Download finished. Elapsed time: $((endseconds-startseconds)) seconds."
   ) | yad --progress --title="Downloading $dlname" --center \
