@@ -26,12 +26,17 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 # Instructions
 ### Table of Contents
  - [Home](#home)
- - [Settings](#settings)
+   - [Settings](#settings)
  - [IMG Mode](#img-mode)
  - [USB Mode](#usb-mode)
  - [Flash](#flash)
  - [Button explanations](#explanations-for-some-buttons)
+   - [Boot](#boot)
+   - [View](#view)
+   - [Edit](#edit)
+   - [Advanced Mount](#advanced-mount)
  - [Under the hood](#under-the-hood)
+   - [Directory Tree](#directory-tree)
  - [Q&A](#qa)
 ## Home
 ![home page](https://i.ibb.co/vz4yR40/home.png)  
