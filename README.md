@@ -45,22 +45,22 @@ Select a drive in the list, then click an action button on the bottom.
     - **Edit**: Modify the partitions using Gparted.
 ## IMG Mode
 Customize Raspbian Images.  
-![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
+![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)    
 Before you can see that above page, you first have to select an img.  
-![img mode page 1](https://i.ibb.co/TLcT6cD/img-mode1.png)
+![img mode page 1](https://i.ibb.co/TLcT6cD/img-mode1.png)  
 **3 ways** to select a Raspbian Image:
  - **Click the arrow** on the right to see any previously used disk images:  
-![arrow](https://i.ibb.co/tH9qLTQ/arrow.png)
+![arrow](https://i.ibb.co/tH9qLTQ/arrow.png)  
  - **Drag-n-drop** a Raspbian image from File Manager to the text box:  
-![drag and drop](https://i.ibb.co/PmFWQzh/dnd.png)
+![drag and drop](https://i.ibb.co/PmFWQzh/dnd.png)  
  - Or click **Download New** to download & unzip a new Raspbian image:  
-![download](https://i.ibb.co/XD8FgkN/download.png)
+![download](https://i.ibb.co/XD8FgkN/download.png)  
 Download mode has been tuned for **maximum speed**.  
 It downloads, buffers, and extracts, simultaneously.
-![benchmark](https://i.ibb.co/25KV76J/benchmark.png)
+![benchmark](https://i.ibb.co/25KV76J/benchmark.png)  
 
 After a disk image has been selected, this main page appears:
-![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)
+![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
 **Buttons**:
    - **Back**: Back to the image selection window.  
    - **Flash**: Copy everything from the selected img to a device.
@@ -68,7 +68,7 @@ After a disk image has been selected, this main page appears:
     - **View**: Mounts the image to `/media/pi/pi-power-tools` so you can modify the filesystem.
     - **Edit**: Modify the partitions using Gparted.
     - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.
-    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.![advmount](https://i.ibb.co/PQXPL1M/advmount.png)
+    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.![advmount](https://i.ibb.co/PQXPL1M/advmount.png)  
     - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
       - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
    - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
@@ -133,75 +133,45 @@ When you're finished, be sure to **click Delete** to detach the loop device.
 Pro tip: *There are many comments in the shell scripts. Not only does this assist debugging, it also makes most of it self-explanatory.*  
 ### Directory Tree:
 
-    /home/pi/Pi-Power-Tools
-    ├── data
-    │   ├── home.conf
-    │   ├── imglist
-    │   ├── mirrors
-    │   ├── mountpoint
-    │   ├── part-table.img
-    │   ├── vdesktop.conf
-    │   ├── version
-    │   └── ziplist
-    ├── flash
-    ├── functions
-    │   ├── advmount
-    │   ├── buffer
-    │   ├── edit
-    │   ├── imglist-parser
-    │   ├── restore-pt
-    │   ├── shrinkimage
-    │   ├── zerofree
-    │   └── zerofree_runner
-    ├── home
-    ├── icons
-    ├── img-mode
-    ├── installedpackages
-    ├── installgui
-    ├── README.md
-    ├── update
-    ├── usb-mode
-    ├── vdesktop
-    │   ├── profile
-    │   ├── README.md
-    │   ├── shadow
-    │   ├── vdesktop
-    │   └── version
-    └── version
-
- - **Pi-Power-Tools** - This is the main folder that stores everything.
+ - **Pi-Power-Tools/** - This is the main folder that stores everything.
+> During an update, the old folder is renamed to Pi-Power-Tools.old/
  - Scripts:
    - **installgui** - This prompts for packages to be installed
    - **flash** - This is the [Flash tool](#flash).
    - **update** - This script is what installs/updates Pi Power Tools.
-   - **home** - This is the main [Home](#home)page.
+   - **home** - Go to [Home](#home) section.
+   - **img-mode** - Go to [IMG Mode](#img-mode) section.
+   - **usb-mode** - Go to [USB Mode](#usb-mode) section.
  - Other files:
-   - **image-utils.conf** - Saves the settings of image-utils.
    - **installedpackages** - Keeps a record of what the update script installed.
-   - **README.md** - You are reading this right now.
+   - **README.md** - You are reading [this](https://github.com/Botspot/Pi-Power-Tools/blob/master/README.md) right now.
    - **version** - Lets Pi Power Tools keep track of what version it is to see when an update is available. (exists only for backwards-compatibility)
-   - **imglist** - Stores previously used disk images.
  - Folders:
- - **functions** - Stores sub-scripts that do certain things.
+ - **functions/** - Stores sub-scripts that do certain things.
    - **advmount** - The [Advanced Mount](#advanced-mount) tool.
- - **data** - Stores configuration files
+   - **buffer** - The secret sauce behind the fast download speeds. This ARMHF executable ships with Pi Power Tools, to prevent adding a dependency for installing `buffer`.
+   - **edit** - A short bash script that opens a Raspbian image in `gparted`. It handles creating a loop device and deleting it when done.
+   - **imglist-parser** - Bash script that parses `imglist`, deletes entries that don't exist on the filesystem, removes duplicate entries, and `echo`'s the resulting output.
+   - **restore-pt** - Short bash script to overwrite the specified disk image's partition table with `part-table.img`.
+   - **shrinkimage** - Botspot's version of `image-shrink`. Uses a unique process to remove all free space from the root partition. Developed to solve the [licensing issue](https://github.com/Botspot/Pi-Power-Tools/issues/1) from using RonR's `image-utils`.
+   - **zerofree** - Another ARMHF executable for recognizing unused blocks and overwriting them with zeros. Shrinks a disk image even more. Only used if enabled in [Settings](#settings).
+   - **zerofree_runner** - Wrapper bash script to interface with `zerofree`. Creates a loop device for the specified img, runs `zerofree`, runs `shrinkimage`, then removes the loop device.
+ - **data/** - Stores configuration files
    - **home.conf** - Stores the configuration from the [Settings window](#settings).
    - **imglist** - Keeps track of what disk images have been used. 
    - **mirrors** - URLs, sizes, and names of download sites. Feel free to add your own.
    - **mountpoint** - Change where to mount to. Default is `/media/pi/pi-power-tools`.
    - **part-table.img** - The default partition table extracted from Raspbian Buster Full. Used by the Reset PT button in [IMG Mode](#img-mode).
-     - **vdesktop.conf** - Stores the boot mode for `vdesktop`. Possible values are `gui`, `cli`, and `cli-login`.
-     - **version** - The new location for the version file. Compared against the online versiont o check for updates.
-     - **ziplist** - Exactly the same as `imglist`, but stores entries for previously used ZIP files instead. Currently only used by [Flash](#flash).
-   - **icons** - Stores all the icons used in the user interface of Pi Power Tools.
-   - **vdesktop** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo]([https://github.com/Botspot/vdesktop](https://github.com/Botspot/vdesktop)):
-   - Script:
-     - **vdesktop** - The main script
-   - Other files:
-     - **profile** - This is temporarily mounted to the selected device to start the desktop session. (If enabled via [Settings](#settings))
-     - **shadow** - This is mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`.
-     - **version** - Lets Vdesktop keep track of what version it is to see when an update is available.
-     - **README.md** - The instructions for running vdesktop standalone
+   - **vdesktop.conf** - Stores the boot mode for `vdesktop`. Possible values are `gui`, `cli`, and `cli-login`.
+   - **version** - The new location for the version file. Compared against the online versiont o check for updates.
+   - **ziplist** - Exactly the same as `imglist`, but stores entries for previously used ZIP files instead. Currently only used by the [Flash tool](#flash).
+ - **icons/** - Stores all the icons for the user interface.
+ - **vdesktop/** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo]([https://github.com/Botspot/vdesktop](https://github.com/Botspot/vdesktop)):
+   - **vdesktop** - The main script
+   - **profile** - This is temporarily mounted to the selected device to start the desktop session. (If enabled via [Settings](#settings))
+   - **shadow** - This is mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`.
+   - **version** - Lets Vdesktop keep track of what version it is to see when an update is available.
+   - **README.md** - The instructions for running vdesktop standalone
 
 ### Basic script design:
  - The scripts all use YAD to handle the user interface.* I found that Zenity was way too limited.  
