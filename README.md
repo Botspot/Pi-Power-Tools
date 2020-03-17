@@ -32,7 +32,7 @@ The menu button opens this window by default. Enter IMG Mode or USB Mode from he
 Currently, you can change what the menu button opens by default, (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
 ## USB Mode
 Manage storage devices connected to your Pi.  
-![usb mode](https://i.ibb.co/vJ68mRY/usb.png)
+![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
 Select a drive in the list, then click an action button on the bottom.  
 *Please note that your Pi's root device (`/dev/mmcblk0`) cannot be flashed or booted.*  
 **Buttons**:  
@@ -63,12 +63,12 @@ After a disk image has been selected, this main page appears:
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
 **Buttons**:
    - **Back**: Back to the image selection window.  
-   - **Flash**: Copy everything from the selected img to a device.
-   - **Boot**: Attempt to "boot" the selected device using a virtual desktop.
-    - **View**: Mounts the image to `/media/pi/pi-power-tools` so you can modify the filesystem.
-    - **Edit**: Modify the partitions using Gparted.
-    - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.
-    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.![advmount](https://i.ibb.co/PQXPL1M/advmount.png)  
+   - **Flash**: Copy everything from the selected img to a device. [Details](#flash)  
+   - **Boot**: Attempt to "boot" the selected device using a virtual desktop. [Details](#boot)  
+    - **View**: Mounts the image to `/media/pi/pi-power-tools` so you can modify the filesystem. [Details](#view)  
+    - **Edit**: Modify the partitions using Gparted. [Details](#edit)  
+    - **Reset PT**: This button *attempts* to fix the partitions if you messed them up somehow. It replaces the partition table with the one from Raspbian Buster Full. Your Mileage May Vary.  
+    - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.  ![advmount](https://i.ibb.co/PQXPL1M/advmount.png)  
     - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
       - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
    - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
@@ -88,13 +88,12 @@ Breakdown of the pros and cons:
 |Better for a single flash|Better for flashing multiple SD cards
 
 Concerning speed, here are benchmarks made on a 4GB Pi 4:
-(in seconds)
 ||Faster Mode:|Slower mode:|
 |--|--|--|
-|Raspbian Full|387|816|
+|Raspbian Full|387 seconds|816 seconds|
 |Raspbian|205|393|
 |Raspbian Lite|102|184|
-
+---
 # Explanations for some buttons:
 ## Boot
 With this handy button, you can customize a disk image graphically before flashing it to your SD card.  
@@ -128,6 +127,7 @@ If there are multiple loop devices associated with it, you will be prompted to s
 Now you can mount each partition where you want to:  
 ![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)    
 When you're finished, be sure to **click Delete** to detach the loop device.
+
 ---
 ## For those who are interested in the inner workings of Pi Power Tools:
 Pro tip: *There are many comments in the shell scripts. Not only does this assist debugging, it also makes most of it self-explanatory.*  
