@@ -97,7 +97,9 @@ Concerning speed, here are benchmarks made on a 4GB Pi 4:
 # Explanations for some buttons:
 ## Boot
 With this handy button, you can customize a disk image graphically before flashing it to your SD card.  
-Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.  
+
+> Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.
+
 First, the Console will appear and display the boot text like this:  
 ![boot console](https://i.ibb.co/PNnbW7K/console.png)  
 
@@ -122,7 +124,7 @@ Lets you edit the partitions of the selected device using `gparted`.
 Fine-tune control over loop devices and mountpoints for disk images.  
 Select the disk image you want:  
 ![image-utils settings tab](https://i.ibb.co/Tk5R1wv/advmount-page-1.png)  
-If there are multiple loop devices associated with it, you will be prompted to selected one.  
+If there are multiple loop devices associated with it, you will be prompted to select one.  
 ![image-utils settings tab](https://i.ibb.co/84zD9yk/advmount-page-2.png)    
 Now you can mount each partition where you want to:  
 ![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)    
