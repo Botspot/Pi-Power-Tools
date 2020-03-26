@@ -12,7 +12,16 @@
 ## To install:
 #### Run this in the terminal:
 `wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
-
+#### System requirements:
+ - Raspberry Pi 3B, 3B+, or 4B
+   - Older versions have not been tested
+ - Running Raspbian Buster or Stretch
+   - Raspbian for PC won't work)
+ - Passwordless `sudo` ability for `pi` user
+   - This is default for Raspbian
+ - Internet connection
+   - For update checking & installs
+    
 After installing, Pi Power Tools can be launched from the Menu:
 ![menu](https://i.ibb.co/PQthp6N/menu.png)  
 
