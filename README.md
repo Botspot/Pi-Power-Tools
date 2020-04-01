@@ -16,7 +16,7 @@
  - Raspberry Pi 3B, 3B+, or 4B
    - Older versions have not been tested
  - Running Raspbian Buster or Stretch
-   - Raspbian for PC won't work)
+   - Raspbian for PC won't work
  - Passwordless `sudo` ability for `pi` user
    - This is default for Raspbian
  - Internet connection
