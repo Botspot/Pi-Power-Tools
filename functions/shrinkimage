@@ -44,7 +44,7 @@ echo '
 extending partition to eof'
 echo y | sudo parted $loopdev ---pretend-input-tty resizepart 2 100% || warn 'partition extension failed.'
 
-sudo e2fsck -f $partpath || warn 'Check filesystem failed.'
+sudo e2fsck -f -p $partpath || warn 'Check filesystem failed.'
 
 #shrink filesystem
 echo '
