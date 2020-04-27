@@ -121,7 +121,7 @@ Concerning speed, here are benchmarks made on a 4GB Pi 4:
 ---
 # Explanations for some buttons:
 ## Boot
-With this handy button, you can customize a disk image graphically before flashing it to your SD card.  
+With this handy button, you can "test drive" your img before flashing it. Any changes made inside (`apt install`, change preferences, etc) will be preserved in the img.
 
 > Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.
 
