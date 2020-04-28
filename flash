@@ -527,6 +527,9 @@ endseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
 sudo killall dd 2>/dev/null
 sudo kill -9 $(ps -e|grep ' dd' | awk '{print $1}') 2>/dev/null
 
+#ensure all data is finished writing
+sync
+
 yad --wrap --text="Flashing complete.\nThat took $((endseconds-startseconds)) seconds." \
   --title=Flashing --window-icon="${DIRECTORY}/icons/logo-64.png" --width=300 --height=100 \
 	--center --button=Close!"${DIRECTORY}/icons/exit.png":0 2>/dev/null
