@@ -519,6 +519,8 @@ else
   errorbox "File not found." fatal
 fi
 
+#ensure all data is finished writing
+sync
 
 #get seconds of uptime at end to calculate time taken to flash
 endseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
@@ -526,9 +528,6 @@ endseconds=$(cat /proc/uptime | awk '{print $1}' | awk '{print int($1+0.5)}')
 #kill dd 2 different ways to make sure actually killed.
 sudo killall dd 2>/dev/null
 sudo kill -9 $(ps -e|grep ' dd' | awk '{print $1}') 2>/dev/null
-
-#ensure all data is finished writing
-sync
 
 yad --wrap --text="Flashing complete.\nThat took $((endseconds-startseconds)) seconds." \
   --title=Flashing --window-icon="${DIRECTORY}/icons/logo-64.png" --width=300 --height=100 \
