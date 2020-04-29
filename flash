@@ -318,8 +318,8 @@ Slower: Download and unzip, <u>then</u> flash. Raw IMG file remains.' | yad --li
     childpid=$!
     trap "kill $childpid" EXIT
     
-    #add first 100 mb to cache. This speeds the download process.
-    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
+    #add first 10 mb to cache. This speeds the download process.
+    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd ibs=10M obs=10M | dd bs=10M count=1 of=/dev/null
     trap "kill $!" EXIT
     
     wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | dd of="${HOME}/download-img/ppt-dl-${dlfilename}" bs=1M
@@ -383,8 +383,8 @@ Slower: Download and unzip, <u>then</u> flash. Raw IMG file remains.' | yad --li
     echo "from: $dlurl"
     echo "to: $TO"
     
-    #add first 100 mb to cache. This speeds the download process.
-    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
+    #add first 10 mb to cache. This speeds the download process.
+    wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd ibs=10M obs=10M | dd bs=10M count=1 of=/dev/null
     
     wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | sudo dd of="$TO" obs=1M &
     #kill the above command on exit
