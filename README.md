@@ -1,9 +1,9 @@
 # Pi Power Tools ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 ## General Purpose Raspbian Image & SD Card Manager
-Want to **build your own custom Raspbian SD card image**? Like enabling ssh, modifying `/boot/config.txt`, doing an `apt update`, enabling VNC, or installing something?
-Have a pile of sd cards and curious what's on them? (and don't want to boot them, in a Pi, one at a time?)
-Want to **run two versions of Raspbian** at once?
-Or, how about **running Raspbian Stretch on a Pi 4**?
+Want to **build your own custom Raspbian SD card image**? Like enabling ssh, modifying `/boot/config.txt`, doing an `apt update`, enabling VNC, or installing something?  
+Have a pile of sd cards and curious what's on them? (and don't want to boot them, in a Pi, one at a time?)  
+Want to **run two versions of Raspbian** at once?  
+Or, how about **running Raspbian Stretch on a Pi 4**?  
 ### No other tool can do any of these:
  - **Boot** - Powered by [Vdesktop](https://github.com/Botspot/vdesktop). Runs the Raspbian image in a virtual machine. It even shows the desktop!
  - **Flash** - Flashes Raspbian directly from the Internet to the selected device. Tuned for maximum speed, [proven by benchmarks](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=272365).
@@ -11,12 +11,12 @@ Or, how about **running Raspbian Stretch on a Pi 4**?
  - **Edit** - Auto-creates a loop device for the disk image then opens it with Gparted.
  - **Resize** - Add or remove free space from a disk image with a single click. <-- This also attempts to repair the image!
 
-A couple screenshots:
-![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)
-![usb mode](https://i.ibb.co/vJ68mRY/usb.png)
-![download](https://i.ibb.co/XD8FgkN/download.png)
-![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)
-Want to give it a spin? Great!
+A couple screenshots:  
+![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
+![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
+![download](https://i.ibb.co/XD8FgkN/download.png)  
+![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)  
+Want to give it a spin? Great!  
 ## To install:
 `wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
 #### System requirements:
@@ -130,11 +130,12 @@ Concerning speed, here are benchmarks made on a 4GB Pi 4:
 ---
 # Explanations for some buttons:
 ## Boot
-With this handy button, you can "test drive" your img before flashing it. Any changes made inside (`apt install`, change preferences, etc) will be preserved in the img.
+With this handy button, you can "test drive" your img/usb without needing to power down, switch sd cards, etc. Any changes made inside (`apt install`, change preferences, etc) will be preserved in the img/usb.
 
-> Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.
+> Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.  
+> That means this method will still work just fine, *even if the whole boot partition is corrupted*!
 
-First, the Console will appear and display the boot text like this:  
+First, the VM's Console will appear and display the boot text:  
 ![boot console](https://i.ibb.co/PNnbW7K/console.png)  
 
 After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](#settings), a window similar to VNC will open and display the desktop.  
@@ -153,8 +154,8 @@ Lets you edit the partitions of the selected device using `gparted`.
   
 ## Advanced Mount
 Fine-tune control over loop devices and mountpoints for disk images.    
-If there are multiple loop devices associated with it, you will be prompted to select one.  
-Which one to delete? Usually you want to keep the top one on the list. (in the below screenshot, `/dev/loop0`)  
+If there are multiple loop devices associated with it, you will be prompted to select one and delete the others.  
+Which one to delete? Usually you want to keep the top one on the list. (in this example, that's `/dev/loop0`)  
 
 ![image-utils settings tab](https://i.ibb.co/ftn0JXz/loop-select.png)    
 Now you can mount each partition where you want to:  
@@ -170,11 +171,11 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
 > During an update, the old folder is renamed to Pi-Power-Tools.old/
  - Scripts:
    - **installgui** - This prompts for packages to be installed
-   - **flash** - This is the [Flash tool](#flash).
+   - **flash** - This is the [Flash tool](#flash)'s script.
    - **update** - This script is what installs/updates Pi Power Tools.
-   - **home** - Go to [Home](#home) section.
-   - **img-mode** - Go to [IMG Mode](#img-mode) section.
-   - **usb-mode** - Go to [USB Mode](#usb-mode) section.
+   - **home** - This is [Home](#home)'s script.
+   - **img-mode** - This script is [IMG Mode](#img-mode).
+   - **usb-mode** - This script is [USB Mode](#usb-mode).
  - Other files:
    - **installedpackages** - Keeps a record of what the update script installed.
    - **README.md** - You are reading [this](https://github.com/Botspot/Pi-Power-Tools/blob/master/README.md) right now.
@@ -199,7 +200,7 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
    - **version** - The new location for the version file. Compared against the online versiont o check for updates.
    - **ziplist** - Exactly the same as `imglist`, but stores entries for previously used ZIP files instead. Currently only used by the [Flash tool](#flash).
  - **icons/** - Stores all the icons for the user interface.
- - **vdesktop/** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo]([https://github.com/Botspot/vdesktop](https://github.com/Botspot/vdesktop)):
+ - **vdesktop/** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo](https://github.com/Botspot/vdesktop):
    - **vdesktop** - The main script
    - **profile** - This is temporarily mounted to the selected device to start the desktop session. (If enabled via [Settings](#settings))
    - **shadow** - This is mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`.
@@ -211,9 +212,9 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
 `*` Okay, `installgui` and `update` *do* use zenity because Raspbian does not include YAD by default.
 
 ## Q&A
- - Q: Unique logo. ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)What inspired you?    
-> It's a combination of BB-8, the RPi logo, and a saw blade. Also I think it looks a bit like like a pineapple, which is my favorite fruit, BTW.
+ - Q: Unique logo.![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)What inspired you?    
+> It's a combination of BB-8, the RPi logo, and a saw blade. Also I think it looks a bit like like a pineapple, which is my favorite fruit.
  - What made you develop this tool?  
-> I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so tedious that I realized there must be a better way.
+> I while back, I wanted to download Raspbian, uninstall all programming tools from it, do an `apt update` & `upgrade`, add a chrome extension to the browser, then flash it to a SD card. It took *several days* to fumble around with terminal commands. The action was so simple, but the process so hard that I realized a tool to do it was sorely needed.
  - Q: How long did it take to program this?  
-> Several months. But it was entirely worth the effort.
+> Several months. But it saved me enough time to be worth it. And I had a blast programming it all.
