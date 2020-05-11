@@ -1,31 +1,39 @@
-![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
-# Pi Power Tools
-## The Ultimate Swiss Army Knife for Raspbian Disk Images and SD Cards.
-
+# Pi Power Tools ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
+## General Purpose Raspbian Image & SD Card Manager
+Want to **build your own custom Raspbian SD card image**? Like enabling ssh, modifying `/boot/config.txt`, doing an `apt update`, enabling VNC, or installing something?
+Have a pile of sd cards and curious what's on them? (and don't want to boot them, in a Pi, one at a time?)
+Want to **run two versions of Raspbian** at once?
+Or, how about **running Raspbian Stretch on a Pi 4**?
 ### No other tool can do any of these:
- - **Boot** - Powered by [Vdesktop](https://github.com/Botspot/vdesktop). Runs the disk image in a virtual machine.
- - **Flash** - Flashes Raspbian directly from the Internet to the selected device.
+ - **Boot** - Powered by [Vdesktop](https://github.com/Botspot/vdesktop). Runs the Raspbian image in a virtual machine. It even shows the desktop!
+ - **Flash** - Flashes Raspbian directly from the Internet to the selected device. Tuned for maximum speed, [proven by benchmarks](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=272365).
  - **Mount** - Full control to manage loop devices and mountpoints.
  - **Edit** - Auto-creates a loop device for the disk image then opens it with Gparted.
- - **Resize** - Add or remove free space from a disk image.
+ - **Resize** - Add or remove free space from a disk image with a single click. <-- This also attempts to repair the image!
 
+A couple screenshots:
+![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)
+![usb mode](https://i.ibb.co/vJ68mRY/usb.png)
+![download](https://i.ibb.co/XD8FgkN/download.png)
+![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)
+Want to give it a spin? Great!
 ## To install:
-#### Run this in the terminal:
 `wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
 #### System requirements:
  - Raspberry Pi 3B, 3B+, or 4B
-   - Older versions have not been tested
+   - Older versions have not been tested, but should work fine
  - Running Raspbian Buster or Stretch
-   - Raspbian for PC won't work
+   - Raspbian Desktop for PC won't work
  - Passwordless `sudo` ability for `pi` user
    - This is default for Raspbian
  - Internet connection
-   - For update checking & installs
+   - For update checking & img downloading
     
 After installing, Pi Power Tools can be launched from the Menu:
 ![menu](https://i.ibb.co/PQthp6N/menu.png)  
 
 ## To uninstall:
+If it's not working for you, please consider [opening an issue](https://github.com/Botspot/Pi-Power-Tools/issues/new).
 ```
 sudo apt purge gparted yad systemd-container xserver-xephyr expect
 rm -rf ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old
@@ -33,6 +41,7 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 ```
 ---
 # Instructions
+How do we use this awesome software?!
 ### Table of Contents
  - [Home](#home)
    - [Settings](#settings)
@@ -105,7 +114,7 @@ In addition to any previously used img and zip files, there are **three download
 ![flash download options](https://i.ibb.co/3RRfnrR/flash-dl-opts.png)  
 If Download is selected, this window will appear next asking which download mode you want.  
 ![Flash tool second page](https://i.ibb.co/dmL3b7s/flash2.png)    
-The first mode is slightly faster than the second one.
+The first mode is much faster than the second one.
 Breakdown of the pros and cons:
 | Faster mode | Slower mode|
 |--|--|
@@ -128,18 +137,15 @@ With this handy button, you can "test drive" your img before flashing it. Any ch
 First, the Console will appear and display the boot text like this:  
 ![boot console](https://i.ibb.co/PNnbW7K/console.png)  
 
-> Under certain circumstances, Vdesktop will ask permission to change a UUID or a machine-id. This rarely corrupts anything, so typing `y` is
-> usually appropriate.
-
 After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](#settings), a window similar to VNC will open and display the desktop.  
 ![xephyr](https://i.ibb.co/j4snZ8z/xephyr.png)  
 
 > It is a [known issue](https://github.com/Botspot/vdesktop/issues/3) that the browser crashes with the `Aw, Snap!` error.
 
 ## View
-Mounts the selected device to `/media/pi/pi-power-tools`.  
+Mounts the selected device/img to `/media/pi/pi-power-tools`.  
 ![view dialog](https://i.ibb.co/RgbKJff/view-files.png)  
-When you close the `Viewing /dev/sdX`, the selected device will be unmounted (ejected).  
+When you close the `Viewing /dev/sdX` dialog window, the selected device will be unmounted (ejected).  
 
 ## Edit
 Lets you edit the partitions of the selected device using `gparted`.  
@@ -148,7 +154,7 @@ Lets you edit the partitions of the selected device using `gparted`.
 ## Advanced Mount
 Fine-tune control over loop devices and mountpoints for disk images.    
 If there are multiple loop devices associated with it, you will be prompted to select one.  
-It'e a good idea to delete all loop devices except for the top one on the list.  
+Which one to delete? Usually you want to keep the top one on the list. (in the below screenshot, `/dev/loop0`)  
 
 ![image-utils settings tab](https://i.ibb.co/ftn0JXz/loop-select.png)    
 Now you can mount each partition where you want to:  
@@ -201,13 +207,12 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
    - **README.md** - The instructions for running vdesktop standalone
 
 ### Basic script design:
- - The scripts all use YAD to handle the user interface.* I found that Zenity was way too limited.  
+ - The scripts all use YAD to handle the user interface.* I found that Zenity was way too limited. (and didn't allow for multiple buttons, button icons, customized tooltips, or much else)
 `*` Okay, `installgui` and `update` *do* use zenity because Raspbian does not include YAD by default.
 
 ## Q&A
- - Q: Unique logo. What inspired you?  
-![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
-> It's a combination of BB-8, the RPi logo, and a saw blade.
+ - Q: Unique logo. ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)What inspired you?    
+> It's a combination of BB-8, the RPi logo, and a saw blade. Also I think it looks a bit like like a pineapple, which is my favorite fruit, BTW.
  - What made you develop this tool?  
 > I while back, I wanted to download Raspbian, uninstall all programming tools from it, add a chrome extension to the browser, then flash it to a SD card. It took several days to fumble around with terminal commands. It was so tedious that I realized there must be a better way.
  - Q: How long did it take to program this?  
