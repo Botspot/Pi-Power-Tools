@@ -202,6 +202,7 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
  - **icons/** - Stores all the icons for the user interface.
  - **vdesktop/** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo](https://github.com/Botspot/vdesktop):
    - **vdesktop** - The main script
+   - **clipboardsync** - Keeps the guest's and host's clipboards in sync, like VNC.
    - **profile** - This is temporarily mounted to the selected device to start the desktop session. (If enabled via [Settings](#settings))
    - **shadow** - This is mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`.
    - **version** - Lets Vdesktop keep track of what version it is to see when an update is available.
