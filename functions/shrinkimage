@@ -58,7 +58,7 @@ partstart="$(sudo fdisk -l $loopdev | grep $partpath | awk '{print $2}')"
 echo "partition start: ${partstart}"
 
 #ensure partition start is valid
-if [ $partstart -gt '500000' ];then
+if [ $partstart -gt '300000' ];then
   true
   #partend must be valid
 else
