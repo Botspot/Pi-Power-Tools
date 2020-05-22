@@ -50,10 +50,10 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
  - [Q&A](#qa)
 ## Home
 ![home page](https://i.ibb.co/vz4yR40/home.png)  
-The menu button opens this window by default. Enter IMG Mode or USB Mode from here. The Update button will appear if an update is available.  
+The menu button opens this window by default. Enter [IMG Mode](https://github.com/Botspot/Pi-Power-Tools#img-mode) or [USB Mod](https://github.com/Botspot/Pi-Power-Tools#usb-mode) from here. The Update button will appear if an update is available.  
 ### Settings
 ![settings](https://i.ibb.co/Cz9YMDj/settings.png)  
-Currently, you can change what the menu button opens by default, (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
+Currently, you can change what the menu button opens by default - (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
 
 
 ## IMG Mode
@@ -69,7 +69,6 @@ Before you can see that above page, you first have to select an img.
  - Or click **Download New** to download & unzip a new Raspbian image:  
 ![download](https://i.ibb.co/XD8FgkN/download.png)  
 Download mode has been tuned for **maximum speed**.  
-It downloads, buffers, and extracts, simultaneously.
 ![benchmark](https://i.ibb.co/25KV76J/benchmark.png)  
 
 After a disk image has been selected, this main page appears:
@@ -90,7 +89,7 @@ After a disk image has been selected, this main page appears:
 Manage storage devices connected to your Pi.  
 ![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
 Select a drive in the list, then click an action button on the bottom.  
-*Please note that your Pi's root device (`/dev/mmcblk0`) cannot be flashed or booted.*  
+*Your Pi's internal SD Card (`/dev/mmcblk0`) cannot be flashed or booted.*  
 **Buttons**:  
    - **Home**: Back to the [home window](#home).  
    - **Refresh**: Check for any newly inserted storage devices.  
@@ -189,16 +188,16 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
    - **mountpoint** - Change where to mount to. Default is `/media/pi/pi-power-tools`.
    - **part-table.img** - The default partition table extracted from Raspbian Buster Full. Used by the Reset PT button in [IMG Mode](#img-mode).
    - **vdesktop.conf** - Stores the boot mode for `vdesktop`. Possible values are `gui`, `cli`, and `cli-login`.
-   - **version** - The new location for the version file. Compared against the online versiont o check for updates.
+   - **version** - The new location for the version file. Compared against the online version to check for updates.
    - **ziplist** - Exactly the same as `imglist`, but stores entries for previously used ZIP files instead. Currently only used by the [Flash tool](#flash).
  - **icons/** - Stores all the icons for the user interface.
  - **vdesktop/** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo](https://github.com/Botspot/vdesktop):
    - **vdesktop** - The main script
    - **clipboardsync** - Keeps the guest's and host's clipboards in sync, like VNC.
-   - **profile** - This is temporarily mounted to the selected device to start the desktop session. (If enabled via [Settings](#settings))
-   - **shadow** - This is mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`.
+   - **profile** - This is temporarily mounted to `/etc/profile` of the selected device to start the desktop session. (If enabled via [Settings](#settings))
+   - **shadow** - This is temporarily mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`. (If enabled via [Settings](#settings))
    - **version** - Lets Vdesktop keep track of what version it is to see when an update is available.
-   - **README.md** - The instructions for running vdesktop standalone
+   - **README.md** - [The instructions](https://github.com/Botspot/vdesktop/blob/master/README.md) for running vdesktop standalone
 
 ### Basic script design:
  - The scripts all use YAD to handle the user interface.* I found that Zenity was way too limited. (and didn't allow for multiple buttons, button icons, customized tooltips, or much else)
