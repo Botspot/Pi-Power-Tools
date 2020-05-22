@@ -50,7 +50,7 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
  - [Q&A](#qa)
 ## Home
 ![home page](https://i.ibb.co/vz4yR40/home.png)  
-The menu button opens this window by default. Enter [IMG Mode](https://github.com/Botspot/Pi-Power-Tools#img-mode) or [USB Mod](https://github.com/Botspot/Pi-Power-Tools#usb-mode) from here. The Update button will appear if an update is available.  
+The menu button opens this window by default. Enter [IMG Mode](https://github.com/Botspot/Pi-Power-Tools#img-mode) or [USB Mode](https://github.com/Botspot/Pi-Power-Tools#usb-mode) from here. The Update button will appear if an update is available.  
 ### Settings
 ![settings](https://i.ibb.co/Cz9YMDj/settings.png)  
 Currently, you can change what the menu button opens by default - (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
