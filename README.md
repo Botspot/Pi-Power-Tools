@@ -1,39 +1,32 @@
 # Pi Power Tools ![logo](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/logo-64.png?raw=true)  
 ## General Purpose Raspbian Image & SD Card Manager
 Want to **build your own custom Raspbian SD card image**? Like enabling ssh, modifying `/boot/config.txt`, doing an `apt update`, enabling VNC, or installing something?  
-Have a pile of sd cards and curious what's on them? (and don't want to boot them, in a Pi, one at a time?)  
+Have a pile of sd cards and curious what's on them? (and don't want to boot them, one at a time, in a Pi?)  
 Want to **run two versions of Raspbian** at once?  
 Or, how about **running Raspbian Stretch on a Pi 4**?  
 ### No other tool can do any of these:
  - **Boot** - Powered by [Vdesktop](https://github.com/Botspot/vdesktop). Runs the Raspbian image in a virtual machine. It even shows the desktop!
  - **Flash** - Flashes Raspbian directly from the Internet to the selected device. Tuned for maximum speed, [proven by benchmarks](https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=272365).
  - **Mount** - Full control to manage loop devices and mountpoints.
- - **Edit** - Auto-creates a loop device for the disk image then opens it with Gparted.
- - **Resize** - Add or remove free space from a disk image with a single click. <-- This also attempts to repair the image!
+ - **Edit** - Auto-creates a loop device, then lets you mess up its partitions with Gparted.
+ - **Resize** - Add or remove free space from a disk image with a single click. <-- This also repairs the image!
 
-A couple screenshots:  
+Sneak peek:  
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
-![usb mode](https://i.ibb.co/vJ68mRY/usb.png)  
-![download](https://i.ibb.co/XD8FgkN/download.png)  
-![image-utils settings tab](https://i.ibb.co/PQXPL1M/advmount.png)  
 Want to give it a spin? Great!  
-## To install:
+## To download & install:
 `wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
 #### System requirements:
- - Raspberry Pi 3B, 3B+, or 4B
-   - Older versions have not been tested, but should work fine
+ - Raspberry Pi 3B, 3B+, or 4B (untested on older models)
  - Running Raspbian Buster or Stretch
-   - Raspbian Desktop for PC won't work
  - Passwordless `sudo` ability for `pi` user
-   - This is default for Raspbian
- - Internet connection
-   - For update checking & img downloading
+ - Internet connection (recommended for update checking & img downloading)
     
 After installing, Pi Power Tools can be launched from the Menu:
 ![menu](https://i.ibb.co/PQthp6N/menu.png)  
 
 ## To uninstall:
-If it's not working for you, please consider [opening an issue](https://github.com/Botspot/Pi-Power-Tools/issues/new).
+If it's not working for you, please [open an issue](https://github.com/Botspot/Pi-Power-Tools/issues/new).
 ```
 sudo apt purge gparted yad systemd-container xserver-xephyr expect
 rm -rf ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old
@@ -41,7 +34,6 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 ```
 ---
 # Instructions
-How do we use this awesome software?!
 ### Table of Contents
  - [Home](#home)
    - [Settings](#settings)
