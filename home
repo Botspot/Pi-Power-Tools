@@ -9,27 +9,20 @@ LOCAL_VER="$(head -n 1 "${DIRECTORY}/data/version")"
 echo "latest version: $LATEST_VER"
 echo "local version: $LOCAL_VER"
 
-#if latest version is not empty
-#                      and if local version is out of date
-if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
-  yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
-  	--text="Version ${LATEST_VER} is available. Install now?" \
-  	--center --text-align=center \
-  	--button="Not now!${DIRECTORY}/icons/forward.png:1" --button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
-fi
-
 #if run as menubutton, open default startup window
 if [ "$1" = 'menubutton' ];then
   defopen="$(cat "${DIRECTORY}/data/home.conf" | sed -n 2p)"
+  echo "defopen: $defopen"
   if [ "$defopen" = "This window" ];then
     true #dont prompt for update since user will see it in home page
-  if [ "$defopen" = "USB Mode" ];then
+  elif [ "$defopen" = "USB Mode" ];then
     #display update dialog if update is available
     if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
       yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
       	--text="Version ${LATEST_VER} is available. Install now?" \
       	--center --text-align=center \
-      	--button="Not now!${DIRECTORY}/icons/forward.png:1" --button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
+      	--button="Not now!${DIRECTORY}/icons/forward.png:1" \
+      	--button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
     fi
     #and now go to usb mode
     "${DIRECTORY}/usb-mode" &
@@ -40,21 +33,20 @@ if [ "$1" = 'menubutton' ];then
       yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
       	--text="Version ${LATEST_VER} is available. Install now?" \
       	--center --text-align=center \
-      	--button="Not now!${DIRECTORY}/icons/forward.png:1" --button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
+      	--button="Not now!${DIRECTORY}/icons/forward.png:1" \
+      	--button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
     fi
     #and now go to img mode
     "${DIRECTORY}/img-mode" &
     exit 0
   elif [ "$defopen" = "Flash" ];then
     "${DIRECTORY}/flash"
-  elif [ "$defopen" = "This window" ];then
-    true
   else
     echo "conf corrupted or nonexistent"
     rm "${DIRECTORY}/data/home.conf"
     #make conf file
     echo "
-IMG Mode
+This window
 FALSE
 
 Desktop
@@ -68,11 +60,11 @@ fi
 while true;do
   if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
     addtext="
-  Version $LATEST_VER is available. Click Update to install it.
-  "
-    addbutton="--button=Update!${DIRECTORY}/icons/download.png!Installs the latest version of Pi Power Tools.:6"
+Version $LATEST_VER is available. Click Update to install it.
+"
+    addbutton="--button=Update!${DIRECTORY}/icons/download.png:6"
   elif [ "$(cat "${DIRECTORY}/data/home.conf" | sed -n 3p)" = 'TRUE' ];then
-    addbutton="--button=Update!${DIRECTORY}/icons/download.png!Click this to factory reset Pi Power Tools.:6"
+    addbutton="--button=Update!${DIRECTORY}/icons/download.png:6"
   else
     addbutton=''
   fi
@@ -173,7 +165,9 @@ Console - no autologin"
       
     6)
       echo "Update"
-      wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash &
+      echo 'update function'
+      #wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash &
+      exit 0
       ;;
     *)
       #any other button
