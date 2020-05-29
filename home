@@ -6,6 +6,9 @@ DIRECTORY="$(dirname $0)"
 LATEST_VER="$(wget -qO- https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/data/version)"
 LOCAL_VER="$(head -n 1 "${DIRECTORY}/data/version")"
 
+echo "latest version: $LATEST_VER"
+echo "local version: $LOCAL_VER"
+
 #if latest version is not empty
 #                      and if local version is out of date
 if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
@@ -18,10 +21,28 @@ fi
 #if run as menubutton, open default startup window
 if [ "$1" = 'menubutton' ];then
   defopen="$(cat "${DIRECTORY}/data/home.conf" | sed -n 2p)"
+  if [ "$defopen" = "This window" ];then
+    true #dont prompt for update since user will see it in home page
   if [ "$defopen" = "USB Mode" ];then
+    #display update dialog if update is available
+    if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
+      yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      	--text="Version ${LATEST_VER} is available. Install now?" \
+      	--center --text-align=center \
+      	--button="Not now!${DIRECTORY}/icons/forward.png:1" --button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
+    fi
+    #and now go to usb mode
     "${DIRECTORY}/usb-mode" &
     exit 0
   elif [ "$defopen" = "IMG Mode" ];then
+    #display update dialog if update is available
+    if [ ! -z $LATEST_VER ] && [ $LATEST_VER -gt $LOCAL_VER ];then
+      yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+      	--text="Version ${LATEST_VER} is available. Install now?" \
+      	--center --text-align=center \
+      	--button="Not now!${DIRECTORY}/icons/forward.png:1" --button="Install!${DIRECTORY}/icons/download.png:0" 2>/dev/null && wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
+    fi
+    #and now go to img mode
     "${DIRECTORY}/img-mode" &
     exit 0
   elif [ "$defopen" = "Flash" ];then
@@ -62,7 +83,7 @@ Click USB Mode or IMG Mode to get started.
 Curious what a button does? Just hover your mouse over it!
 
 For full help click here:
-https://github.com/Botspot/Pi-Power-Tools" | yad --text-info \
+https://github.com/Botspot/Pi-Power-Tools#instructions" | yad --text-info \
     --wrap --justify=center --fore=#80FFFF --back=#000000 --title="Pi Power Tools - Home" \
     --width=530 --height=260 --center --wrap --window-icon="${DIRECTORY}/icons/logo-64.png" \
     --image=${DIRECTORY}/icons/logo-tall.png --show-uri --fontname="12" \
