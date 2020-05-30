@@ -126,11 +126,9 @@ With this handy button, you can "test drive" your img/usb without needing to pow
 > Instead of a Virtual Machine, this technique runs at **100% native speed** (no emulation), because the guest runs the same kernel as the host device. Therefore, only booting Raspbian is supported, as **other OSes require other kernels**.  
 > That means this method will still work just fine, *even if the whole boot partition is corrupted*!
 
-First, the VM's Console will appear and display the boot text:  
-![boot console](https://i.ibb.co/PNnbW7K/console.png)  
-
+First, the VM's Console will appear and display the boot text.
 After the boot process has completed, and if "Boot to Desktop" is enabled in [Settings](#settings), a window similar to VNC will open and display the desktop.  
-![xephyr](https://i.ibb.co/j4snZ8z/xephyr.png)  
+![animated boot button](https://github.com/Botspot/Pi-Power-Tools/blob/master/icons/boot_mode.gif?raw=true)  
 
 > It is a [known issue](https://github.com/Botspot/vdesktop/issues/3) that the browser crashes with the `Aw, Snap!` error.
 
