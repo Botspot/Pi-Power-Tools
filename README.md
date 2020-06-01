@@ -168,7 +168,6 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
  - Other files:
    - **installedpackages** - Keeps a record of what the update script installed.
    - **README.md** - You are reading [this](https://github.com/Botspot/Pi-Power-Tools/blob/master/README.md) right now.
-   - **version** - Lets Pi Power Tools keep track of what version it is to see when an update is available. (exists <ins>only</ins> for backwards-compatibility)
  - Folders:
  - **functions/** - Stores sub-scripts that do certain things.
    - **advmount** - The [Advanced Mount](#advanced-mount) tool.
@@ -192,7 +191,7 @@ Pro tip: *There are many comments in the shell scripts. Not only does this assis
  - **vdesktop/** - Ships empty, but `installgui` populates this folder with the below files from the [Vdesktop repo](https://github.com/Botspot/vdesktop):
    - **vdesktop** - The main script
    - **clipboardsync** - Keeps the guest's and host's clipboards in sync, like VNC.
-   - nspawn - The systemd-nspawn command-line. This was broken out of `vdesktop` to allow for lots of bind-mounts. (for sound sync)
+   - **nspawn** - The systemd-nspawn command-line. This was broken out of `vdesktop` to allow for lots of bind-mounts.
    - **profile** - This is temporarily mounted to `/etc/profile` of the selected device to start the desktop session. (If enabled via [Settings](#settings))
    - **shadow** - This is temporarily mounted to `/etc/shadow` of the selected device to ensure the user pi's password is `raspberry`. (If enabled via [Settings](#settings))
    - **version** - Lets Vdesktop keep track of what version it is to see when an update is available.
