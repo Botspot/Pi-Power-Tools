@@ -5,8 +5,8 @@
 #Quickest way to find the size of the online zipped img:
 #wget -qO- <URL> | dd bs=1M count=1 2>/dev/null | busybox unzip -lq - 2>/dev/null | sed -n '3p' | awk '{print $1}'
 #
-#Name<tab>Size in bytes<tab>URL <-- separated by tab characters
+#Name<tab>Unzipped size in bytes<tab>URL <-- separated by tab characters
 #
-Raspbian Desktop Full	7323254784	http://downloads.raspberrypi.org/raspbian_full_latest
-Raspbian Desktop	3787456512	http://downloads.raspberrypi.org/raspbian_latest
-Raspbian Lite	1849688064	http://downloads.raspberrypi.org/raspbian_lite_latest
+Raspberry Pi OS Full	7323254784	https://downloads.raspberrypi.org/raspios_full_armhf_latest
+Raspberry Pi OS	3787456512	https://downloads.raspberrypi.org/raspios_armhf_latest
+Raspberry Pi OS Lite  1849688064	https://downloads.raspberrypi.org/raspios_lite_armhf_latest
