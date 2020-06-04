@@ -62,9 +62,10 @@ while true;do
     addtext="
 Version $LATEST_VER is available. Click Update to install it.
 "
-    addbutton="--button=Update!${DIRECTORY}/icons/download.png:6"
+    addbutton="--button=Update!${DIRECTORY}/icons/download.png!Installs the latest version of Pi Power Tools.:6"
   elif [ "$(cat "${DIRECTORY}/data/home.conf" | sed -n 3p)" = 'TRUE' ];then
-    addbutton="--button=Update!${DIRECTORY}/icons/download.png:6"
+    #if update enabled always
+    addbutton="--button=Update!${DIRECTORY}/icons/download.png!Click this to factory reset Pi Power Tools.:6"
   else
     addbutton=''
   fi
@@ -79,7 +80,7 @@ https://github.com/Botspot/Pi-Power-Tools#instructions" | yad --text-info \
     --wrap --justify=center --fore=#80FFFF --back=#000000 --title="Pi Power Tools - Home" \
     --width=530 --height=260 --center --wrap --window-icon="${DIRECTORY}/icons/logo-64.png" \
     --image=${DIRECTORY}/icons/logo-tall.png --show-uri --fontname="12" \
-    $addbutton \
+    "$addbutton" \
     --button='Settings'!"${DIRECTORY}/icons/settings.png"!'Customize your experience with Pi Power Tools.':4 \
     --button='USB Mode'!"${DIRECTORY}/icons/usb-16.png"!'Manage a USB device that has Raspbian flashed to it.':2 \
     --button='IMG Mode'!"${DIRECTORY}/icons/img-16.png"!'Everything you need to customize a Raspbian image.':0 \
