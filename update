@@ -14,6 +14,10 @@ cd $HOME
 rm -rf ${HOME}/Pi-Power-Tools.old
 mv -f ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old 2>/dev/null
 git clone https://github.com/Botspot/Pi-Power-Tools || exit 1
+
+#transfer old config
+cp ${HOME}/Pi-Power-Tools.old/data/imglist ${HOME}/Pi-Power-Tools/data/
+cp ${HOME}/Pi-Power-Tools.old/data/ziplist ${HOME}/Pi-Power-Tools/data/
 sleep 3
 
 echo 25
