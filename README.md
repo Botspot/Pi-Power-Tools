@@ -16,6 +16,7 @@ Sneak peek:
 Want to give it a spin? Great!  
 ## To download & install:
 `wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash`  
+This clones the repository to `/home/pi/Pi-Power-Tools`, adds a menu button, and asks permission before installing YAD. Nothing is modified outside of your home directory.
 #### System requirements:
  - Raspberry Pi 3B, 3B+, or 4B (untested on older models)
  - Running Raspbian Buster or Stretch
