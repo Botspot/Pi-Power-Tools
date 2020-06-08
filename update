@@ -32,6 +32,7 @@ ${HOME}/Pi-Power-Tools/installgui "yad" || exit 0
 
 echo 75
 echo "# Creating menu button..."
+echo -n '' > ${HOME}/.local/share/applications/ppt.desktop
 echo "[Desktop Entry]
 Name=Pi Power Tools
 Comment=General Purpose Raspbian Image & SD Card Manager
