@@ -25,7 +25,7 @@ This clones the repository to `/home/pi/Pi-Power-Tools`, adds a menu button, and
  - Passwordless `sudo` ability for `pi` user
  - Internet connection (recommended for update checking & img downloading)
     
-After installing, Pi Power Tools can be launched from the Menu:
+After installing, Pi Power Tools can be launched from the Menu:  
 ![menu](https://i.ibb.co/PQthp6N/menu.png)  
 
 ## To uninstall:
