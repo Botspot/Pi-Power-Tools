@@ -94,7 +94,8 @@ fi
 #chop off unused portion of image file
 echo '
 removing unused portion of file'
-truncate -s $(((partend+1)*512+(addmb)*1050*1024)) "$imagefile" || fatal 'extend img failed.'
+#truncate as user pi ----------------------------------------------if that fails try truncating as user root------------------------------if that still fails then exit
+truncate -s $(((partend+1)*512+(addmb)*1050*1024)) "$imagefile" || sudo truncate -s $(((partend+1)*512+(addmb)*1050*1024)) "$imagefile" || fatal 'extend img failed.'
 
 echo '
 refreshing loop device'
