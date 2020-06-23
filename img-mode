@@ -259,8 +259,8 @@ else
   read enter
 fi
 \"" \
-	--field="1GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Adding a Gigabyte should fix it!':FBTN "lxterminal --title=\"Adding 1 GB free space to $img\" -e \"
-if ${DIRECTORY}/functions/shrinkimage $img 1024 ; then
+	--field="$(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Add some free space!':FBTN "lxterminal --title=\"Adding 1 GB free space to $img\" -e \"
+if ${DIRECTORY}/functions/shrinkimage $img $(($(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)*1024)) ; then
   echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
   sleep 10
 else
