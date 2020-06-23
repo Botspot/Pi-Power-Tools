@@ -142,7 +142,7 @@ Console - no autologin"
         --field="Boot to::CB" "${sorted_boot::-1}" \
         --field="<big>IMG Mode Settings</big>:LBL" '' \
         --field="Run zerofree during Shrink:CHK" "$(echo "$settings" | sed -n 7p)" \
-        --field="GB of free space" "$(echo "$settings" | sed -n 8p)" \
+        --field="GB of free space:NUM" "$(echo "$settings" | sed -n 8p)!1..1024" \
         --button='Cancel'!"${DIRECTORY}/icons/back.png":1 \
         --button='Save'!"${DIRECTORY}/icons/save.png":0 \
         --separator='\n' 2>/dev/null)"
