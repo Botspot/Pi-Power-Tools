@@ -18,7 +18,7 @@ Want to give it a spin? Great!
 ```
 wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
 ```
-This clones the repository to `/home/pi/Pi-Power-Tools`, adds a menu button, and asks permission before installing YAD. Nothing is modified outside of your home directory.
+This clones the repository to `/home/pi/Pi-Power-Tools`, adds a menu button, clones my [vdesktop repo](https://github.com/Botspot/vdesktop), and asks permission before installing YAD. Nothing is modified outside of your home directory.
 #### System requirements:
  - Raspberry Pi 3B, 3B+, or 4B (untested on older models)
  - Running Raspbian Buster or Stretch
@@ -56,7 +56,7 @@ rm ${HOME}/Desktop/ppt.desktop ${HOME}/.local/share/applications/ppt.desktop
 The menu button opens this window by default. Enter [IMG Mode](https://github.com/Botspot/Pi-Power-Tools#img-mode) or [USB Mode](https://github.com/Botspot/Pi-Power-Tools#usb-mode) from here. The Update button will appear if an update is available.  
 ### Settings
 ![settings](https://i.ibb.co/Cz9YMDj/settings.png)  
-Currently, you can change what the menu button opens by default - (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, and whether or not to run `zerofree` when the Shrink Button is clicked.  
+Currently, you can change what the menu button opens by default - (Flash, IMG Mode, USB Mode, and Home), if the Boot Button launches the Desktop, whether or not to run `zerofree` when the Shrink Button is clicked, and how much free space to add when the 'X GB free' button is clicked.  
 
 
 ## IMG Mode
@@ -86,7 +86,7 @@ After a disk image has been selected, this main page appears:
  - **Advmount**: Control exactly where to mount each partition. In theory this will work for any kind of disk image, but has only been tested on Raspbian images. YMMV.  [Details](#advanced-mount)    
   - **Shrink**: Removes all free space from the selected image. If enabled in [Settings](#Settings), `zerofree` will run afterwards to remove unused blocks from the disk image. 
     - <ins>Though similar in function, the script used to do this is entirely different in design and does not utilize RonR's `image-utils` in any way.</ins>
- - **1 GB Free**: Adds one gigabyte of free space to the root partition. 
+ - **1 GB Free**: Adds one gigabyte of free space to the root partition. Customize how much free space in [Settings](https://github.com/Botspot/Pi-Power-Tools#settings).
    - It is **not accumulative**, so clicking it multiple times won't result in multiple gigabytes of free space.
 ## USB Mode
 Manage storage devices connected to your Pi.  
