@@ -124,7 +124,7 @@ while [ $repeat -eq 1 ];do
     echo "parsed ziplist to ${ziplist}EOZ"
     
     #mirrors list                       ignore commented lines
-    mirrors="$(cat ${DIRECTORY}/data/mirrors | grep -v ^\#)"
+    mirrors="$(cat "${DIRECTORY}/data/mirrors" | grep -v ^\#)"
     
     
     #parse mirrors list                            
@@ -215,25 +215,19 @@ if [ "$(echo "$FROM" | awk '{print $1}')" = "Download" ];then
   devname="$(lsblk -o name,path | grep "$TO" | awk '{print $1}' | head -n 1)"
   echo "Devname: ${devname}EOD"
   
+  #remove first word "Download"
+  FROM="$(echo "$FROM" | cut -d' ' -f2-)"
+  
   #convert user-friendly name to mirror URL
   
-  if [ "$FROM"  = 'Download Raspbian Desktop Full' ];then
-    #echo full
-    URL='https://downloads.raspberrypi.org/raspbian_full_latest'
-  elif [ "$FROM" = 'Download Raspbian Desktop' ];then
-    #echo desktop
-    URL='https://downloads.raspberrypi.org/raspbian_latest'
-  elif [ "$FROM" = 'Download Raspbian Lite' ];then
-    #echo lite
-    URL='https://downloads.raspberrypi.org/raspbian_lite_latest'
-  else
-    echo "Unrecognized download site!"
-    exit 1
-  fi
-  echo "Download URL is $URL"
+  #this gets the line number for the selected name
+  linenumber="$(echo "$mirrors" | tr '	' '\n' | grep -nx "$FROM" | cut -f1 -d:)"
+  #this goes 2 line numbers lower, which turns out to be the line number for the URL
+  linenumber=$((linenumber+2))
+  #and this turns that line number into what we want: the URL that corresponds with the selected name.
+  URL="$( "$mirrors" | tr '	' '\n' | sed -n "${linenumber}p")"
   
-  #remove first word "Download"
-  FROM="$(echo "$FROM" | cut -f 2- -d ' ')"
+  echo "Download URL is $URL"
   
   #match it to relavent line in mirrors file
   #Get the line number of the relevant line in text file, then read the data from that line.
