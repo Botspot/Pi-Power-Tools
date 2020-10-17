@@ -93,7 +93,7 @@ Rsync copies individual files to the image instead of using dd. This approach is
       
       sudo rsync -axDHv --partial --numeric-ids --delete --force /boot "${mntpnt}/boot"
       
-      sudo rsync -axDHv --partial --numeric-ids --delete --force --max-size=100m \
+      sudo rsync -axDHv --partial --numeric-ids --delete --force \
         --exclude="${mntpnt}" --exclude='/dev' --exclude='/lost+found' \
         --exclude='/media' --exclude='/mnt' --exclude='/proc' --exclude='.cache' \
         --exclude='/run' --exclude='/sys' --exclude='/tmp' \
