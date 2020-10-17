@@ -1,8 +1,8 @@
 #!/bin/bash
-DIRECTORY="$(dirname $0)"
+DIRECTORY="$(dirname "$0")"
 
 #ensure prerequesites are installed
-${DIRECTORY}/installgui "yad" &>/dev/null || exit 0
+"${DIRECTORY}/installgui" "yad" &>/dev/null || exit 0
 
 #kill all subprocesses on exit
 trap 'kill $(jobs -p)' EXIT
@@ -26,6 +26,93 @@ errorbox(){
     	exit 1
   else
     errorbox 'errorbox error' fatal
+  fi
+}
+
+
+function imgfromsystem {
+  
+  echo "This feature creates an .img file from your Pi"\'"s internal SD card.
+You can save the img anywhere, but please make sure there is enough free space to save it!
+Rsync copies individual files to the image instead of using dd. This approach is much faster, saves space, and lets you do incremental backups." | yad \
+    --title='Please read this' --window-icon="${DIRECTORY}/icons/logo-64.png" --text-info \
+    --center --wrap --width=500 --height=200 --fontname=12 \
+    --button=Cancel!"${DIRECTORY}/icons/exit.png":1 --button="Continue"!"${DIRECTORY}/icons/forward.png":0
+  
+  #only do anything if user clicks Continue
+  if [ $? == 0 ];then
+    img="$( yad --file --save --center --text="Tip: You can select a pre-existing img file and rsync will only copy new/changed files." --filename="$HOME/mynewimage.img" --title='Where to save this image?' --window-icon="${DIRECTORY}/icons/logo-64.png")"
+    
+    if [ ! -z "$img" ];then
+      (
+      if [ ! -f "$img" ];then
+        echo 'Downloading blank image...'
+        wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$img" || sudo wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$img" || errorbox "Failed to download image file!" fatal
+        echo "Download finished."
+      fi
+      
+      #calculate how big the image has to be
+      usedspace="$(df | grep /dev/root | awk '{print $3}')"
+      #above is in KB
+      #below we convert to MB
+      usedspace=$((usedspace/1024))
+      #exit 0
+      
+      echo "Used disk space: $usedspace"
+      
+      #check if image needs to be expanded
+      curimagesize="$(ls -l "$img" | awk '{print $5}')"
+      curimagesize=$((curimagesize/1024/1024)) #convert to MB
+      
+      echo "Current image size: $curimagesize"
+      
+      if [ $curimagesize -lt $usedspace ];then
+        echo "Image is too small. Expanding it now."
+        "${DIRECTORY}/functions/shrinkimage" "$img" $usedspace || errorbox "Failed to expand image!" fatal
+        echo 'Expanded image.'
+      else
+        echo "Image is large enough already. Not expanding it."
+      fi
+      
+      
+      
+      LOOP="$(sudo losetup -fP --show $img)" #create loopback device
+      
+      trap "sudo umount -fl "${mntpnt}/boot" &>/dev/null
+      sudo umount -fl "$mntpnt" &>/dev/null
+      sudo losetup -d "$LOOP" &>/dev/null #delete loopback device" EXIT
+      
+      mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
+      
+      sudo mkdir -p "$mntpnt" 2>/dev/null
+      
+      sudo mount -o rw "${LOOP}p2" "$mntpnt"
+      sudo mount -o rw "${LOOP}p1" "${mntpnt}/boot"
+      
+      echo "Mounted image. Now copying the files in."
+      
+      sudo rsync -axDHv --partial --numeric-ids --delete --force \
+        --exclude "${mntpnt}" --exclude '/dev' --exclude '/lost+found' \
+        --exclude '/media' --exclude '/mnt' --exclude '/proc' --exclude '.cache' \
+        --exclude '/run' --exclude '/sys' --exclude '/tmp' \
+        --exclude '/etc/udev/rules.d/70-persistent-net.rules' \
+        --exclude '/var/lib/asterisk/astdb.sqlite3-journal' \
+        --exclude "$img" \
+        / "${mntpnt}"
+      
+      sudo umount -fl "${mntpnt}/boot" &>/dev/null
+      sudo umount -fl "$mntpnt" &>/dev/null
+      sudo losetup -d "$LOOP" &>/dev/null #delete loopback device
+      
+      pkill yad
+      ) 2>&1 | yad --text-info --tail --text="Copying files into the img..." \
+        --center --width=900 --height=500 --window-icon="${DIRECTORY}/icons/logo-64.png" --title='Creating image from this SD card' \
+        --button=Cancel!"${DIRECTORY}/icons/exit.png":"pkill -P $$"
+    else
+      img=''
+    fi
+  else
+    img=''
   fi
 }
 
@@ -161,13 +248,14 @@ function selectimg {
     	--field="Select an img to continue.":LBL '' \
     	--field=":CBE" "$imglist" \
     	--button='Home'!"${DIRECTORY}/icons/home.png"!'Back to home':4 \
+      --button='SD to IMG'!"${DIRECTORY}/icons/sd-to-img.png"!"Creates an .img file from your Pi"\'"s internal SD card.:6" \
     	--button='Download New'!"${DIRECTORY}/icons/download.png":2 \
-  	--button=Next!"${DIRECTORY}/icons/forward.png":0 \
+  	  --button=Next!"${DIRECTORY}/icons/forward.png":0 \
     	2>/dev/null)"
     button=$?
     
     #if neither next nor download nor usb mode buttons pressed
-    if [ ! $button -eq 2 ]&&[ ! $button -eq 0 ]&&[ ! $button -eq 4 ];then
+    if [ ! $button -eq 2 ]&&[ ! $button -eq 0 ]&&[ ! $button -eq 4 ]&&[ ! $button -eq 6 ];then
       #exit the program
       exit 0
     fi
@@ -201,6 +289,13 @@ function selectimg {
       img=''
       download
     fi
+    
+    #if clicked IMG from this SD
+    if [ $button -eq 6 ];then
+      img=''
+      imgfromsystem
+    fi
+    
   done
   echo "$img" >> "${DIRECTORY}/data/imglist"
 }
