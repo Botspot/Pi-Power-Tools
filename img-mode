@@ -78,10 +78,6 @@ Rsync copies individual files to the image instead of using dd. This approach is
       
       LOOP="$(sudo losetup -fP --show $img)" #create loopback device
       
-      trap "sudo umount -fl "${mntpnt}/boot" &>/dev/null
-      sudo umount -fl "$mntpnt" &>/dev/null
-      sudo losetup -d "$LOOP" &>/dev/null #delete loopback device" EXIT
-      
       mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
       
       sudo mkdir -p "$mntpnt" 2>/dev/null
