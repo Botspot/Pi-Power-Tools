@@ -3,6 +3,11 @@
 
 DIRECTORY="$(dirname "$(dirname $0)")"
 
+echo "$(find "$HOME" -maxdepth 1 -name "*.img" )" >> "${DIRECTORY}/data/imglist"
+echo "$(find "$HOME/Downloads" -maxdepth 1 -name "*.img")" >> "${DIRECTORY}/data/imglist"
+
+mkdir -p "${DIRECTORY}/data"
+
 #if imglist exists, ensure all lines contain valid files
 if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
   #number of lines in file
@@ -24,7 +29,7 @@ if [ -f "${DIRECTORY}/data/imglist" ];then #if imglist exists
   fi
 else
   #create file
-  echo '' > "${DIRECTORY}/data/ziplist"
+  echo '' > "${DIRECTORY}/data/imglist"
   exit 1
 fi
 if [ ! -z "$imglist" ];then
