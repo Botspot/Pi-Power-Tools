@@ -56,7 +56,6 @@ Rsync copies individual files to the image instead of using dd. This approach is
       #above is in KB
       #below we convert to MB
       usedspace=$((usedspace/1024))
-      #exit 0
       
       echo "Used disk space: $usedspace"
       
@@ -74,9 +73,14 @@ Rsync copies individual files to the image instead of using dd. This approach is
         echo "Image is large enough already. Not expanding it."
       fi
       
-      
+      trap "sudo umount -fl "\""${mntpnt}/boot"\"" &>/dev/null
+      sudo umount -fl "\""$mntpnt"\"" &>/dev/null
+      sudo losetup -d "\""$LOOP"\"" &>/dev/null #delete loopback device" EXIT
       
       LOOP="$(sudo losetup -fP --show $img)" #create loopback device
+      
+      #repair image
+      sudo e2fsck -f -y -v -C 0 "${LOOP}p2"
       
       mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
       
@@ -87,13 +91,15 @@ Rsync copies individual files to the image instead of using dd. This approach is
       
       echo "Mounted image. Now copying the files in."
       
-      sudo rsync -axDHv --partial --numeric-ids --delete --force \
-        --exclude "${mntpnt}" --exclude '/dev' --exclude '/lost+found' \
-        --exclude '/media' --exclude '/mnt' --exclude '/proc' --exclude '.cache' \
-        --exclude '/run' --exclude '/sys' --exclude '/tmp' \
-        --exclude '/etc/udev/rules.d/70-persistent-net.rules' \
-        --exclude '/var/lib/asterisk/astdb.sqlite3-journal' \
-        --exclude "$img" \
+      sudo rsync -axDHv --partial --numeric-ids --delete --force /boot "${mntpnt}/boot"
+      
+      sudo rsync -axDHv --partial --numeric-ids --delete --force --max-size=100m \
+        --exclude="${mntpnt}" --exclude='/dev' --exclude='/lost+found' \
+        --exclude='/media' --exclude='/mnt' --exclude='/proc' --exclude='.cache' \
+        --exclude='/run' --exclude='/sys' --exclude='/tmp' \
+        --exclude='/etc/udev/rules.d/70-persistent-net.rules' \
+        --exclude='/var/lib/asterisk/astdb.sqlite3-journal' \
+        --exclude="$img" \
         / "${mntpnt}"
       
       sudo umount -fl "${mntpnt}/boot" &>/dev/null
@@ -101,9 +107,9 @@ Rsync copies individual files to the image instead of using dd. This approach is
       sudo losetup -d "$LOOP" &>/dev/null #delete loopback device
       
       pkill yad
-      ) 2>&1 | yad --text-info --tail --text="Copying files into the img..." \
+      ) 2>&1 | yad --text-info --tail \
         --center --width=900 --height=500 --window-icon="${DIRECTORY}/icons/logo-64.png" --title='Creating image from this SD card' \
-        --button=Cancel!"${DIRECTORY}/icons/exit.png":"pkill -P $$"
+        --button=Cancel!"${DIRECTORY}/icons/exit.png":"pkill -P $$" --back=black --fore='#0040c0'
     else
       img=''
     fi
