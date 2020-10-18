@@ -41,13 +41,13 @@ Rsync copies individual files to the image instead of using dd. This approach is
   
   #only do anything if user clicks Continue
   if [ $? == 0 ];then
-    img="$( yad --file --save --center --text="Tip: You can select a pre-existing img file and rsync will only copy new/changed files." --filename="$HOME/mynewimage.img" --title='Where to save this image?' --window-icon="${DIRECTORY}/icons/logo-64.png")"
+    savedimg="$( yad --file --save --center --text="Tip: You can select a pre-existing img file and rsync will only copy new/changed files." --filename="$HOME/mynewimage.img" --title='Where to save this image?' --window-icon="${DIRECTORY}/icons/logo-64.png")"
     
-    if [ ! -z "$img" ];then
+    if [ ! -z "$savedimg" ];then
       (
-      if [ ! -f "$img" ];then
+      if [ ! -f "$savedimg" ];then
         echo 'Downloading blank image...'
-        wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$img" || sudo wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$img" || errorbox "Failed to download image file!" fatal
+        wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$savedimg" || sudo wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$savedimg" || errorbox "Failed to download image file!" fatal
         echo "Download finished."
       fi
       
@@ -60,7 +60,7 @@ Rsync copies individual files to the image instead of using dd. This approach is
       echo "Used disk space: $usedspace"
       
       #check if image needs to be expanded
-      curimagesize="$(ls -l "$img" | awk '{print $5}')"
+      curimagesize="$(ls -l "$savedimg" | awk '{print $5}')"
       curimagesize=$((curimagesize/1024/1024)) #convert to MB
       
       echo "Current image size: $curimagesize"
@@ -73,14 +73,12 @@ Rsync copies individual files to the image instead of using dd. This approach is
         echo "Image is large enough already. Not expanding it."
       fi
       
-      trap "sudo umount -fl "\""${mntpnt}/boot"\"" &>/dev/null
-      sudo umount -fl "\""$mntpnt"\"" &>/dev/null
-      sudo losetup -d "\""$LOOP"\"" &>/dev/null #delete loopback device" EXIT
+      LOOP="$(sudo losetup -fP --show $savedimg)" #create loopback device
       
-      LOOP="$(sudo losetup -fP --show $img)" #create loopback device
+      trap "sudo losetup -d $LOOP" EXIT
       
       #repair image
-      sudo e2fsck -f -y -v -C 0 "${LOOP}p2"
+      sudo e2fsck -f -y -v "${LOOP}p2" || errorbox "Check image failed!" fatal
       
       mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
       
@@ -89,33 +87,44 @@ Rsync copies individual files to the image instead of using dd. This approach is
       sudo mount -o rw "${LOOP}p2" "$mntpnt"
       sudo mount -o rw "${LOOP}p1" "${mntpnt}/boot"
       
+      trap "sudo umount -fl ${mntpnt}/boot
+      sudo umount -fl $mntpnt" EXIT
+      
       echo "Mounted image. Now copying the files in."
       
-      sudo rsync -axDHv --partial --numeric-ids --delete --force /boot "${mntpnt}/boot"
+      sudo rsync -av --partial --numeric-ids --delete --force /boot/. "${mntpnt}/boot"
       
-      sudo rsync -axDHv --partial --numeric-ids --delete --force \
+      echo "Copied boot."
+      
+      sudo rsync -aDHv --partial --numeric-ids --delete --force \
         --exclude="${mntpnt}" --exclude='/dev' --exclude='/lost+found' \
         --exclude='/media' --exclude='/mnt' --exclude='/proc' --exclude='.cache' \
         --exclude='/run' --exclude='/sys' --exclude='/tmp' \
         --exclude='/etc/udev/rules.d/70-persistent-net.rules' \
         --exclude='/var/lib/asterisk/astdb.sqlite3-journal' \
-        --exclude="$img" \
+        --exclude="$savedimg" \
         / "${mntpnt}"
+      
+      echo "rsync finished. Waiting 20 seconds before removing loop device."
+      sleep 20
       
       sudo umount -fl "${mntpnt}/boot" &>/dev/null
       sudo umount -fl "$mntpnt" &>/dev/null
       sudo losetup -d "$LOOP" &>/dev/null #delete loopback device
       
+      yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
+    	--text="SD-to-IMG operation completed.\nThe log window will close in 30 seconds." \
+    	--center --width=300 --text-align=center \
+    	--timeout=30 --timeout-indicator=bottom \
+    	--button="Close!${DIRECTORY}/icons/exit.png:0" 2>/dev/null
+      
       pkill yad
       ) 2>&1 | yad --text-info --tail \
         --center --width=900 --height=500 --window-icon="${DIRECTORY}/icons/logo-64.png" --title='Creating image from this SD card' \
         --button=Cancel!"${DIRECTORY}/icons/exit.png":"pkill -P $$" --back=black --fore='#0040c0'
-    else
-      img=''
     fi
-  else
-    img=''
   fi
+  img=''
 }
 
 #DOWNLOAD
@@ -330,7 +339,7 @@ output="$(yad --form --columns=4 --separator='\n' \
 	--text="Editing <u><b>$img</b></u>
 IMG-specific tools:" \
 	--field='Reset PT'!"${DIRECTORY}/icons/backup.png"!'Messed up the partitions? This tries to fix it.
-Reverts the partition table to the default one from Raspbian Buster.':FBTN "lxterminal --title=\"Shrinking $img\" -e \"
+Reverts the partition table to the default one from Raspbian Buster.':FBTN "x-terminal-emulator --title=\"Shrinking $img\" -e \"
 if ${DIRECTORY}/functions/restore-pt $img ; then
   echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
   sleep 10
@@ -340,7 +349,7 @@ else
 fi
 \"" \
 	--field="Advmount"!"${DIRECTORY}/icons/usb-mount.png"!'Control exactly how and where to mount each partition':FBTN "${DIRECTORY}/functions/advmount $img" \
-	--field="Shrink"!"${DIRECTORY}/icons/shrink.png"!'Removes all free space. IMG is made as small as possible.':FBTN "lxterminal --title=\"Shrinking $img\" -e \"
+	--field="Shrink"!"${DIRECTORY}/icons/shrink.png"!'Removes all free space. IMG is made as small as possible.':FBTN "x-terminal-emulator --title=\"Shrinking $img\" -e \"
 if ${DIRECTORY}/functions/shrinkimage $img ; then
   
   #run zerofree if enabled
@@ -356,7 +365,7 @@ else
   read enter
 fi
 \"" \
-	--field="$(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Add some free space!':FBTN "lxterminal --title=\"Adding 1 GB free space to $img\" -e \"
+	--field="$(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Add some free space!':FBTN "x-terminal-emulator --title=\"Adding 1 GB free space to $img\" -e \"
 if ${DIRECTORY}/functions/shrinkimage $img $(($(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)*1024)) ; then
   echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
   sleep 10
@@ -395,7 +404,7 @@ case $button in
   4)
     echo "Boot"
     ${DIRECTORY}/installgui "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
-    lxterminal --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $img $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10"
+    x-terminal-emulator --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $img $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10"
     sleep 10
     #wait until vdesktop is closed before reopening UI
     while ps -C vdesktop >/dev/null;do   sleep 1; done
