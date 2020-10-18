@@ -56,7 +56,7 @@ if [ ! $button -eq 0 ];then
 fi
 
 echo $PKG_LIST > ${DIRECTORY}/installedpackages
-lxterminal --title="Installing progress" -e "sudo apt install -y $PKG_LIST;echo -e '\nInstallation finished.\nClosing in 5 seconds.';sleep 5"
+x-terminal-emulator --title="Installing progress" -e "sudo apt install -y $PKG_LIST;echo -e '\nInstallation finished.\nClosing in 5 seconds.';sleep 5"
 if [ ! $? -eq 0 ];then #if apt exits with error
   echo -e "Could not install the packages!\nTry installing them yourself by running this in the terminal:\nsudo apt install $PGK_LIST" | yad --text-info \
   	--width=700 --height=150 --title='Pi Power Tools' --center \
