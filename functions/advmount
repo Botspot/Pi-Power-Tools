@@ -44,7 +44,7 @@ available_loops="$(sudo losetup --list -nO back-file,name)"
 
 numlines=$(echo "$available_loops" | wc -l | awk '{print $1}')
 LOOP=''
-LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | awk '{print $2}' | sort)"
+LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | tr ' ' '\n' | grep 'loop' | sort)"
 
 echo "Loop: ${LOOP}EOL"
 
@@ -63,13 +63,14 @@ numlines=$(echo "$LOOP" | wc -l | awk '{print $1}')
 while [ $numlines -gt 1 ];do
   echo "Multiple loopback devices linked to this img."
   #refresh loop file
-  LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | awk '{print $2}' | sort)"
+  LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | tr ' ' '\n' | grep 'loop' | sort)"
+  
   LOOP="$(echo -e "$LOOP" | yad --list --separator='\n' \
   	--title="Advanced Mount" --center --window-icon="${DIRECTORY}/icons/logo-64.png" \
   	--column="Device" --print-column=1 \
   	--text="There are multiple loop devices associated\nwith <u>$IMG</u>\nWhich one?" \
   	--button=Select!"${DIRECTORY}/icons/forward.png:2" \
-  	--button=Delete!"${DIRECTORY}/icons/trash.png:0" \
+  	--button=Detach!"${DIRECTORY}/icons/trash.png:0" \
   	2>/dev/null)"
   button=$? #get exit code to determine which button was pressed
   echo "Output: ${LOOP}EOO"
@@ -87,7 +88,7 @@ while [ $numlines -gt 1 ];do
       numlines=1 #escape loop
       ;;
     0)
-      echo "Delete"
+      echo "Detach"
       sudo umount $LOOP
       #get subdevices
       partitions="$(lsblk $LOOP -no PATH | tail -n +2 | tr '\n' ' ')"
@@ -98,7 +99,7 @@ while [ $numlines -gt 1 ];do
       sudo losetup -d "$LOOP"
       
       #refresh numlines variable
-      LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | awk '{print $2}' | sort)"
+      LOOP="$(sudo losetup --list -nO back-file,name | grep "$IMG" | tr ' ' '\n' | grep 'loop' | sort)"
       numlines=$(echo "$LOOP" | wc -l | awk '{print $1}')
       echo "Numlines is now $numlines"
       ;;
@@ -222,7 +223,7 @@ while true; do
 	  --column=:IMG --column="Partition" --column="FS Type" --column="Label" --column="Size" --column="Used" --column="Mountpoint" \
 	  --text="Partitions within <u>$IMG</u>" \
 	  --print-column=2 \
-	  --button=Delete!"${DIRECTORY}/icons/trash.png"!"All done? Click this to unmount everything and detach $LOOP.:4" \
+	  --button=Detach!"${DIRECTORY}/icons/trash.png"!"All done? Click this to unmount everything and detach $LOOP.:4" \
 	  --button=Unmount!"${DIRECTORY}/icons/usb-unmount.png"!'Safely eject to avoid corruption when you unplug it.:2' \
 	  --button=Mount!"${DIRECTORY}/icons/usb-mount.png"!'This lets you view the files.:0' \
 	  2>/dev/null)"
@@ -288,7 +289,7 @@ while true; do
       fi
       ;;
     4)
-      echo "Delete"
+      echo "Detach"
       sudo umount $LOOP
       #get subdevices
       partitions="$(lsblk $LOOP -no PATH | tail -n +2 | tr '\n' ' ')"
