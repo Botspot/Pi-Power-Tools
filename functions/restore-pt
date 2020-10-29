@@ -13,4 +13,4 @@ sudo dd if="${DIRECTORY}/data/part-table.img" of="$1" bs=1M count=1 conv=notrunc
 #enlarge the image to raspbian full specs
 truncate "$1" -s '>10000000000'
 
-"${DIRECTORY}/functions/shrinkimage" "$1" || "${DIRECTORY}/functions/shrinkimage" "$1"
+sudo "${DIRECTORY}/functions/image-shrink" "$1"
