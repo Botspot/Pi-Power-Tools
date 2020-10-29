@@ -7,4 +7,4 @@ trap "sudo losetup -d $LOOP" EXIT
 
 sudo "${DIRECTORY}/functions/zerofree" -v "${LOOP}p2" || exit 1
 
-"${DIRECTORY}/functions/shrinkimage" "$1"
+sudo "${DIRECTORY}/functions/image-shrink" "$1"
