@@ -45,79 +45,45 @@ Rsync copies individual files to the image instead of using dd. This approach is
     
     if [ ! -z "$savedimg" ];then
       (
-      if [ ! -f "$savedimg" ];then
-        echo 'Downloading blank image...'
-        wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$savedimg" || sudo wget https://github.com/Botspot/Pi-Power-Tools/releases/download/blank.img/blank.img -O "$savedimg" || errorbox "Failed to download image file!" fatal
-        echo "Download finished."
+      
+      echo "Checking for large files on filesystem..."
+      lfiles="$(find /home -mount -type f -size +1G 2>/dev/null)"
+      echo "Done"
+      
+      if [ ! -z "$lfiles" ];then
+        #indent each file
+        PREIFS="$IFS"
+        IFS=$'\n'
+        for file in $lfiles
+        do
+          displaylfiles="${displaylfiles}\n  ${file}"
+        done
+        IFS="$PREIFS"
+        
+        echo -e "These files are larger than 1GB:\n${displaylfiles}" | yad --text-info \
+          --title='Exclude large files?' --window-icon="${DIRECTORY}/icons/logo-64.png" --text-info \
+          --center --wrap --width=500 --height=200 --fontname=12 \
+          --button='Include these files in the img':1 --button="Skip these files":0
+        if [ "$?" == '0' ];then
+          #'large files not included' enabled
+          rsyncargs="${rsyncargs} --max-size=1g"
+        fi
       fi
       
-      #calculate how big the image has to be
-      usedspace="$(df | grep /dev/root | awk '{print $3}')"
-      #above is in KB
-      #below we convert to MB
-      usedspace=$((usedspace/1024))
-      
-      echo "Used disk space: $usedspace"
-      
-      #check if image needs to be expanded
-      curimagesize="$(ls -l "$savedimg" | awk '{print $5}')"
-      curimagesize=$((curimagesize/1024/1024)) #convert to MB
-      
-      echo "Current image size: $curimagesize"
-      
-      if [ $curimagesize -lt $usedspace ];then
-        echo "Image is too small. Expanding it now."
-        "${DIRECTORY}/functions/shrinkimage" "$img" $usedspace || errorbox "Failed to expand image!" fatal
-        echo 'Expanded image.'
-      else
-        echo "Image is large enough already. Not expanding it."
+      #if img exists, expand it to 1TB
+      if [ -f "$savedimg" ];then
+        echo "Expanding image to a 1 TB sparse file. It won"\'"t actually take up 1TB, don"\'"t worry."
+        sudo "${DIRECTORY}/functions/image-shrink" "$savedimg" $((1024*1024)) || errorbox "Failed to expand image!" fatal
       fi
       
-      LOOP="$(sudo losetup -fP --show $savedimg)" #create loopback device
+      echo "Starting backup now."
+      sudo "${DIRECTORY}/functions/milliways-image-backup" "$savedimg" "$rsyncargs" || errorbox "Failed to backup image!" fatal
       
-      trap "sudo losetup -d $LOOP" EXIT
+      echo "Backup finished. Shrinking image now."
+      sudo "${DIRECTORY}/functions/image-shrink" "$savedimg" 0 || errorbox "Failed to shrink image!" fatal
       
-      #repair image
-      sudo e2fsck -f -y -v "${LOOP}p2" || errorbox "Check image failed!" fatal
-      
-      mntpnt="$(cat ${DIRECTORY}/data/mountpoint)"
-      
-      sudo mkdir -p "$mntpnt" 2>/dev/null
-      
-      sudo mount -o rw "${LOOP}p2" "$mntpnt"
-      sudo mount -o rw "${LOOP}p1" "${mntpnt}/boot"
-      
-      trap "sudo umount -fl ${mntpnt}/boot
-      sudo umount -fl $mntpnt" EXIT
-      
-      echo "Mounted image. Now copying the files in."
-      
-      sudo rsync -av --partial --numeric-ids --delete --force /boot/. "${mntpnt}/boot"
-      
-      echo "Copied boot."
-      
-      sudo rsync -aDHv --partial --numeric-ids --delete --force \
-        --exclude="${mntpnt}" --exclude='/dev' --exclude='/lost+found' \
-        --exclude='/media' --exclude='/mnt' --exclude='/proc' --exclude='.cache' \
-        --exclude='/run' --exclude='/sys' --exclude='/tmp' \
-        --exclude='/etc/udev/rules.d/70-persistent-net.rules' \
-        --exclude='/var/lib/asterisk/astdb.sqlite3-journal' \
-        --exclude="$savedimg" \
-        / "${mntpnt}"
-      
-      echo "rsync finished. Waiting 20 seconds before removing loop device."
-      sleep 20
-      
-      sudo umount -fl "${mntpnt}/boot" &>/dev/null
-      sudo umount -fl "$mntpnt" &>/dev/null
-      sudo losetup -d "$LOOP" &>/dev/null #delete loopback device
-      
-      yad --title='Pi Power Tools' --window-icon="${DIRECTORY}/icons/logo-64.png" \
-    	--text="SD-to-IMG operation completed.\nThe log window will close in 30 seconds." \
-    	--center --width=300 --text-align=center \
-    	--timeout=30 --timeout-indicator=bottom \
-    	--button="Close!${DIRECTORY}/icons/exit.png:0" 2>/dev/null
-      
+      echo "All done. Closing in 10 seconds."
+      sleep 10
       pkill yad
       ) 2>&1 | yad --text-info --tail \
         --center --width=900 --height=500 --window-icon="${DIRECTORY}/icons/logo-64.png" --title='Creating image from this SD card' \
@@ -350,7 +316,7 @@ fi
 \"" \
 	--field="Advmount"!"${DIRECTORY}/icons/usb-mount.png"!'Control exactly how and where to mount each partition':FBTN "${DIRECTORY}/functions/advmount $img" \
 	--field="Shrink"!"${DIRECTORY}/icons/shrink.png"!'Removes all free space. IMG is made as small as possible.':FBTN "x-terminal-emulator --title=\"Shrinking $img\" -e \"
-if ${DIRECTORY}/functions/shrinkimage $img ; then
+if sudo ${DIRECTORY}/functions/image-shrink $img ; then
   
   #run zerofree if enabled
   if [ $(cat "${DIRECTORY}/data/home.conf" | sed -n 7p) = TRUE ];then
@@ -366,7 +332,7 @@ else
 fi
 \"" \
 	--field="$(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Add some free space!':FBTN "x-terminal-emulator --title=\"Adding 1 GB free space to $img\" -e \"
-if ${DIRECTORY}/functions/shrinkimage $img $(($(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)*1024)) ; then
+if sudo ${DIRECTORY}/functions/image-shrink $img $(($(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)*1024)) ; then
   echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
   sleep 10
 else
