@@ -1,0 +1,299 @@
+#!/bin/bash
+# from https://raspberrypi.stackexchange.com/questions/103990/how-to-backup-shrink-the-image-of-my-working-raspbian-sd-card/103991#103991
+# Original https://raspberrypi.org/forums/viewtopic.php?p=1528736
+# 2019-09-26    Modified to set size of boot sector
+
+trap '{ stty sane; echo ""; errexit "Aborted"; }' SIGINT SIGTERM
+
+ADDBLK=0
+
+# Set BOOT_SIZE_MB to the Desired boot sector size (in MB) - should be multiple of 4MB
+BOOT_SIZE_MB=256
+BOOTSIZEM=$BOOT_SIZE_MB'M'
+
+BOOTBEG=8192
+BOOT_SIZE="$((BOOT_SIZE_MB * 1024 * 1024))"
+ROUND_SIZE="$((4 * 1024 * 1024))"
+# Ensure root sector starts on an Erase Block Boundary (4MB)
+ROOTBEG=$(((BOOT_SIZE + ROUND_SIZE -1) / ROUND_SIZE * ROUND_SIZE / 512 + BOOTBEG))
+
+mntpnt="/tmp/img-backup-mnt"
+
+ONEMB=$((1024 * 1024))
+
+rsyncargs="$2"
+
+# create BOOT loop device
+mkloop1()
+{
+  local INFO1=""
+  local SIZE1=0
+  local START1=0
+
+  sync
+  INFO1="$(sfdisk -d "${img}")"
+  START1=$(grep type=c <<< "${INFO1}" | sed -n 's|^.*start=\s\+\([0-9]\+\).*$|\1|p')
+  SIZE1=$(grep type=c <<< "${INFO1}" | sed -n 's|^.*size=\s\+\([0-9]\+\).*$|\1|p')
+  LOOP1="$(losetup -f --show -o $((${START1} * 512)) --sizelimit $((${SIZE1} * 512)) "${img}")"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to create BOOT loop device"
+  fi
+}
+
+rmloop1()
+{
+  if [ "${LOOP1}" != "" ]; then
+    sync
+    losetup -d "${LOOP1}"
+    LOOP1=""
+ fi
+}
+
+# create ROOT loop device
+mkloop2()
+{
+  local INFO2=""
+  local SIZE2=0
+  local START2=0
+
+  sync
+  INFO2="$(sfdisk -d "${img}")"
+  START2=$(grep type=83 <<< "${INFO2}" | sed -n 's|^.*start=\s\+\([0-9]\+\).*$|\1|p')
+  SIZE2=$(grep type=83 <<< "${INFO2}" | sed -n 's|^.*size=\s\+\([0-9]\+\).*$|\1|p')
+  LOOP2="$(losetup -f --show -o $((${START2} * 512)) --sizelimit $((${SIZE2} * 512)) "${img}")"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to create ROOT loop device"
+  fi
+}
+
+rmloop2()
+{
+  if [ "${LOOP2}" != "" ]; then
+    sync
+    losetup -d "${LOOP2}"
+    LOOP2=""
+  fi
+}
+
+# Mount Image partitions
+mntimg()
+{
+  MNTED=TRUE
+  if [ ! -d "${mntpnt}/" ]; then
+    mkdir "${mntpnt}/"
+    if [ $? -ne 0 ]; then
+      errexit "Unable to make ROOT partition mount point"
+    fi
+  fi
+  mkloop2
+  e2fsck -f -y "${LOOP2}" || errexit "Check image failed!"
+  mount "${LOOP2}" "${mntpnt}/"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to mount image ROOT partition"
+  fi
+  if [ ! -d "${mntpnt}/boot/" ]; then
+    mkdir -p "${mntpnt}/boot/"
+    if [ $? -ne 0 ]; then
+      errexit "Unable to make BOOT partition mount point"
+    fi
+  fi
+  mkloop1
+  mount "${LOOP1}" "${mntpnt}/boot/"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to mount image BOOT partition"
+  fi
+}
+
+umntimg()
+{
+  umount "${mntpnt}/boot/"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to unmount image BOOT partition"
+  fi
+  rmloop1
+  umount "${mntpnt}/"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to unmount image ROOT partition"
+  fi
+  rmloop2
+  rm -r "${mntpnt}/"
+  MNTED=FALSE
+}
+
+errexit()
+{
+  echo ""
+  echo -e "\e[91m$1\e[39m"
+  echo ""
+  sync
+  if [ "${MNTED}" = "TRUE" ]; then
+    umount "${mntpnt}/boot/"
+    umount "${mntpnt}/" && rm -rf "${mntpnt}/"
+  fi
+  rmloop1
+  rmloop2
+  exit 1
+}
+
+LOOP1=""
+LOOP2=""
+MNTED=FALSE
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+if [ $(id -u) -ne 0 ]; then
+  errexit "$0 must be run as root user"
+fi
+
+PGMNAME="$(basename $0)"
+for PID in $(pidof -x -o %PPID "${PGMNAME}"); do
+  if [ ${PID} -ne $$ ]; then
+    errexit "${PGMNAME} is already running"
+  fi
+done
+
+rsync --version &> /dev/null
+if [ $? -ne 0 ]; then
+  errexit "rsync not installed (run: apt-get install rsync)"
+fi
+
+if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
+  SYSTEMD=1
+elif [ -f /etc/init.d/cron ] && [ ! -h /etc/init.d/cron ]; then
+  SYSTEMD=0
+else
+  errexit "Unrecognized init system"
+fi
+
+if [ ${SYSTEMD} -eq 1 ]; then
+  ROOT_PART="$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')"
+else
+  if [ ! -h /dev/root ]; then
+    errexit "/dev/root does not exist or is not a symlink"
+  fi
+  ROOT_PART="$(readlink /dev/root)"
+fi
+
+ROOT_TYPE=$(blkid "/dev/${ROOT_PART}" | sed -n 's|^.*TYPE="\(\S\+\)".*|\1|p')
+
+ROOT_DEV="${ROOT_PART:0:(${#ROOT_PART} - 1)}"
+if [ "${ROOT_DEV}" = "mmcblk0p" ]; then
+  ROOT_DEV="${ROOT_DEV:0:(${#ROOT_DEV} - 1)}"
+fi
+
+PTUUID="$(blkid "/dev/${ROOT_DEV}" | sed -n 's|^.*PTUUID="\(\S\+\)".*|\1|p')"
+
+DEVSIZE=$(blockdev --getsize64 "/dev/${ROOT_PART}")
+BLKSIZE=$(blockdev --getbsz "/dev/${ROOT_PART}")
+BLKCNT=$((${DEVSIZE} / ${BLKSIZE}))
+INFO="$(df | grep /dev/root)"
+DFKSIZE=$(awk '{print $2}' <<< "${INFO}")
+DFKFREE=$(awk '{print $4}' <<< "${INFO}")
+ROOTSIZE=$((${BLKCNT} * ${BLKSIZE}))
+ROOTUSED=$(((${DFKSIZE} - ${DFKFREE}) * 1024))
+IRFSMIN=$(((${ROOTUSED} + (${ADDBLK} * ${BLKSIZE}) + (${ONEMB} - 1)) / ${ONEMB}))
+IRFSMAX=$(((${ROOTSIZE} + (${ONEMB} - 1)) / ${ONEMB}))
+
+img="$1"
+
+if [ -z "$img" ];then
+  errexit "You must specify an img file location. For example: $0 /home/pi/backup.img"
+fi
+
+if [ ! "${img}" = "" ] || [ ! -f "${img}" ]; then
+  # Create Image file
+  IRFSSIZE="1048576" # number in MB - so 1 TB
+  if [ -f "${img}" ]; then
+    rm "${img}"
+    if [ $? -ne 0 ]; then
+      errexit "Unable to delete existing image file"
+    fi
+  fi
+  ROOTEND=$((${ROOTBEG} + ((${IRFSSIZE} * ${ONEMB}) / 512) - 1))
+  truncate -s $(((${ROOTEND} + 1) * 512)) "${img}"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to create image file"
+  fi
+# create image/partitions
+  sync
+  fdisk "${img}" <<EOF > /dev/null
+p
+n
+p
+1
+${BOOTBEG}
++${BOOTSIZEM}
+t
+c
+p
+n
+p
+2
+${ROOTBEG}
+${ROOTEND}
+p
+w
+EOF
+
+  mkloop1
+  mkloop2
+  mkfs.vfat "${LOOP1}" > /dev/null
+  if [ $? -ne 0 ]; then
+    errexit "Unable to create image BOOT filesystem"
+  fi
+  dosfsck "${LOOP1}" > /dev/null
+  if [ $? -ne 0 ]; then
+    errexit "Image BOOT filesystem appears corrupted"
+  fi
+  if [ "${ROOT_TYPE}" = "f2fs" ]; then
+    mkfs.f2fs "${LOOP2}" > /dev/null
+  else
+    mkfs.ext4 -q -b ${BLKSIZE} "${LOOP2}" > /dev/null
+  fi
+  if [ $? -ne 0 ]; then
+    errexit "Unable to create image ROOT filesystem"
+  fi
+  rmloop2
+  rmloop1
+# Initialise image PARTUUID
+  fdisk "${img}" <<EOF > /dev/null
+p
+x
+i
+0x${PTUUID}
+r
+p
+w
+EOF
+# Create empty directories in image root partition
+  mntimg
+  mkdir "${mntpnt}/dev/" "${mntpnt}/media/" "${mntpnt}/mnt/" "${mntpnt}/proc/" "${mntpnt}/run/" "${mntpnt}/sys/" "${mntpnt}/tmp/"
+  if [ $? -ne 0 ]; then
+    errexit "Unable to create image directories"
+  fi
+  chmod a+rwxt "${mntpnt}/tmp/"
+  umntimg
+  echo ""
+  echo "Starting full backup (for incremental backups, run: $0 ${img})"
+# END of create image/partitions
+fi
+
+# Check existing Image
+if [ -d "${img}" ]; then
+  errexit "${img} is a directory"
+elif [ ! -f "${img}" ]; then
+  errexit "${img} not found"
+fi
+echo "Starting incremental backup to ${img}"
+
+# rsync root partition
+mntimg
+sync
+
+rsync -aDHv --partial --numeric-ids --delete --force --exclude="${mntpnt}" --exclude='/dev' --exclude='/media' --exclude='/mnt' --exclude='/proc' --exclude='/run' --exclude='/sys' \
+--exclude='/tmp' --exclude='lost\+found' --exclude="$img" --exclude='/etc/udev/rules.d/70-persistent-net.rules' --exclude='/var/lib/asterisk/astdb.sqlite3-journal' $rsyncargs / "${mntpnt}/"
+if [[ $? -ne 0 && $? -ne 24 ]]; then
+  errexit "Rsync failed."
+fi
+sync
+umntimg
