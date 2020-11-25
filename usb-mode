@@ -98,8 +98,8 @@ while true;do
       ensurevalid
       #the above command sets $valid to 1 if usb device exists.
       if [ $valid -eq 1 ];then
-        ${DIRECTORY}/installgui "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
-        x-terminal-emulator --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $output $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10"
+        "${DIRECTORY}/installgui" "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
+        "${DIRECTORY}/functions/terminal-run" "sudo ${DIRECTORY}/vdesktop/vdesktop $output $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10" "Boot console"
         #wait until vdesktop is closed before reopening UI
         sleep 10
         while ps -C vdesktop >/dev/null;do   sleep 1; done
