@@ -305,7 +305,7 @@ output="$(yad --form --columns=4 --separator='\n' \
 	--text="Editing <u><b>$img</b></u>
 IMG-specific tools:" \
 	--field='Reset PT'!"${DIRECTORY}/icons/backup.png"!'Messed up the partitions? This tries to fix it.
-Reverts the partition table to the default one from Raspbian Buster.':FBTN "x-terminal-emulator --title=\"Shrinking $img\" -e \"
+Reverts the partition table to the default one from Raspbian Buster.':FBTN "${DIRECTORY}/functions/terminal-run \"
 if ${DIRECTORY}/functions/restore-pt $img ; then
   echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
   sleep 10
@@ -313,10 +313,10 @@ else
   echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
   read enter
 fi
-\"" \
+\" \"Resetting partition table of $img\" " \
 	--field="Advmount"!"${DIRECTORY}/icons/usb-mount.png"!'Control exactly how and where to mount each partition':FBTN "${DIRECTORY}/functions/advmount $img" \
-	--field="Shrink"!"${DIRECTORY}/icons/shrink.png"!'Removes all free space. IMG is made as small as possible.':FBTN "x-terminal-emulator --title=\"Shrinking $img\" -e \"
-if sudo ${DIRECTORY}/functions/image-shrink $img ; then
+	--field="Shrink"!"${DIRECTORY}/icons/shrink.png"!'Removes all free space. IMG is made as small as possible.':FBTN "${DIRECTORY}/functions/terminal-run \"
+if sudo ${DIRECTORY}/functions/image-shrink $img 0; then
   
   #run zerofree if enabled
   if [ $(cat "${DIRECTORY}/data/home.conf" | sed -n 7p) = TRUE ];then
@@ -330,15 +330,16 @@ else
   echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
   read enter
 fi
-\"" \
-	--field="$(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Add some free space!':FBTN "x-terminal-emulator --title=\"Adding 1 GB free space to $img\" -e \"
+\" \"Shrinking $img\"" \
+	--field="$(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB Free"!"${DIRECTORY}/icons/expand.png"!'Ran out of space? Add some free space!':FBTN "${DIRECTORY}/functions/terminal-run \"
 if sudo ${DIRECTORY}/functions/image-shrink $img $(($(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)*1024)) ; then
   echo -en '\n\e[32mCommand succeeded.\e[39m\nClosing in 10 seconds.'
   sleep 10
 else
   echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
   read enter
-fi\"" \
+fi
+\" \"Adding 1 GB free space to $img\"" \
   \
 	--button=Back!"${DIRECTORY}/icons/back.png"!:3 \
 	--button=Flash!"${DIRECTORY}/icons/burn.png"!'Copy everything from this img to a device.:2' \
@@ -369,15 +370,15 @@ case $button in
 
   4)
     echo "Boot"
-    ${DIRECTORY}/installgui "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
-    x-terminal-emulator --title="Boot Console" -e "sudo ${DIRECTORY}/vdesktop/vdesktop $img $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10"
+    "${DIRECTORY}/installgui" "systemd-container xserver-xephyr expect" &>/dev/null || exit 0
+    "${DIRECTORY}/functions/terminal-run" "sudo ${DIRECTORY}/vdesktop/vdesktop $img $(cat "${DIRECTORY}/data/vdesktop.conf");sleep 10" "Boot Console"
     sleep 10
     #wait until vdesktop is closed before reopening UI
     while ps -C vdesktop >/dev/null;do   sleep 1; done
     ;;
 
   6)
-    echo "View "
+    echo "View"
     LOOP="$(sudo losetup -fP --show $img)" #create loopback device
     
     sudo mkdir "$mntpnt" 2>/dev/null
@@ -396,7 +397,7 @@ case $button in
     ;;
 
   8)
-    ${DIRECTORY}/installgui "gparted" &>/dev/null || exit 0
+    "${DIRECTORY}/installgui" "gparted" &>/dev/null || exit 0
     echo image
     LOOP="$(sudo losetup -fP --show $img)" #create loopback device
 
