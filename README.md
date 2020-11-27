@@ -64,18 +64,20 @@ Currently, you can change what the menu button opens by default - (Flash, IMG Mo
 Customize Raspbian Images.  
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)    
 Before you can see that above page, you first have to select an img.  
-![img mode page 1](https://i.ibb.co/TLcT6cD/img-mode1.png)  
-**3 ways** to select a Raspbian Image:
- - **Click the arrow** on the right to see any previously used disk images:  
+![img mode page 1](https://i.ibb.co/0sp9NMz/2020-11-27-092634-1920x1080-scrot.png)  
+**4 ways** to select a Raspbian Image:
+ 1. **Click the arrow** on the right to see any previously used disk images:  
 ![arrow](https://i.ibb.co/tH9qLTQ/arrow.png)  
- - **Drag-n-drop** a Raspbian image from File Manager to the text box:  
+ 1. **Drag-n-drop** a Raspbian image from File Manager to the text box:  
 ![drag and drop](https://i.ibb.co/PmFWQzh/dnd.png)  
- - Or click **Download New** to download & unzip a new Raspbian image:  
-![download](https://i.ibb.co/XD8FgkN/download.png)  
+ 1. Click **Download New** to download & unzip a new Raspbian image:  
+![download](https://i.ibb.co/XD8FgkN/download.png)
 Download mode has been tuned for **maximum speed**.  
-![benchmark](https://i.ibb.co/25KV76J/benchmark.png)  
+![benchmark](https://i.ibb.co/25KV76J/benchmark.png)
+ 1. Or create an img from your running Pi by clicking SD to IMG.  
+![sd to img](https://i.ibb.co/pR2dH2N/snapshot.png)  
 
-After a disk image has been selected, this main page appears:
+After a disk image has been selected, this main page appears:  
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
 **Buttons**:
  - **Back**: Back to the image selection window.  
