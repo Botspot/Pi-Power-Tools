@@ -194,6 +194,11 @@ ROOTUSED=$(((${DFKSIZE} - ${DFKFREE}) * 1024))
 IRFSMIN=$(((${ROOTUSED} + (${ADDBLK} * ${BLKSIZE}) + (${ONEMB} - 1)) / ${ONEMB}))
 IRFSMAX=$(((${ROOTSIZE} + (${ONEMB} - 1)) / ${ONEMB}))
 
+# Workaround unable to make ext4 fs in img if blksize is 512
+if [ "${BLKSIZE}" = "512" ]; then
+  ROOT_DEV="1024"
+fi
+
 img="$1"
 
 if [ -z "$img" ];then
