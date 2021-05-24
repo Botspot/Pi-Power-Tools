@@ -15,7 +15,8 @@ Or, how about **running Raspbian Stretch on a Pi 4**?
 Sneak peek:  
 ![img mode](https://i.ibb.co/yQnT2sC/img-mode.png)  
 Want to give it a spin? Great!  
-## To download & install:
+## To download & install
+Run this command in a terminal in the desktop session, [not from the console](https://github.com/Botspot/Pi-Power-Tools/issues/3#issuecomment-791468668):
 ```
 wget -O - https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/update | bash
 ```
