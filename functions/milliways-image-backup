@@ -196,7 +196,7 @@ IRFSMAX=$(((${ROOTSIZE} + (${ONEMB} - 1)) / ${ONEMB}))
 
 # Workaround unable to make ext4 fs in img if blksize is 512
 if [ "${BLKSIZE}" = "512" ]; then
-  BLKSIZE="1024"
+  BLKSIZE="4096"
 fi
 
 img="$1"
