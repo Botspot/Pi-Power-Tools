@@ -339,7 +339,7 @@ else
   echo -en '\n\e[31mCommand failed!\e[39m\nPress Enter to exit.'
   read enter
 fi
-\" \"Adding 1 GB free space to $img\"" \
+\" \"Adding $(cat "${DIRECTORY}/data/home.conf" | sed -n 8p)GB free space to $img\"" \
   \
 	--button=Back!"${DIRECTORY}/icons/back.png"!:3 \
 	--button=Flash!"${DIRECTORY}/icons/burn.png"!'Copy everything from this img to a device.:2' \
