@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" style="pointer-events: none; display: block; width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <path d="M 535 481 m -11.72 0 a 11.72 11.72 0 1 0 23.44 0 a 11.72 11.72 0 1 0 -23.44 0 Z M 535 481 m -8.566 0 a 8.566 8.566 0 0 1 17.132 0 a 8.566 8.566 0 0 1 -17.132 0 Z" style="fill: rgb(95, 99, 104); pointer-events: auto;" transform="matrix(1, 0.000025, -0.000025, 1, -522.987972, -469.024609)" bx:shape="ring 535 481 8.566 8.566 11.72 11.72 1@d6f8510f"/>
+  <rect x="10.472" y="5.975" width="3.06" height="12.049" style="fill: rgb(95, 99, 104); pointer-events: auto;"/>
+</svg>
