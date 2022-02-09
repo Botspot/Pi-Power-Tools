@@ -7,8 +7,19 @@
 #
 #Name<tab>Unzipped size in bytes<tab>URL <-- separated by tab characters
 #
-Raspberry Pi OS Full	7365197824	https://downloads.raspberrypi.org/raspios_full_armhf_latest
-Raspberry Pi OS	3829399552	https://downloads.raspberrypi.org/raspios_armhf_latest
-Raspberry Pi OS Lite	1853882368	https://downloads.raspberrypi.org/raspios_lite_armhf_latest
-Raspberry Pi OS 64-bit	3829399552	https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2020-08-24/2020-08-20-raspios-buster-arm64.zip
+# Raspberry Pi OS (bullseye)
+Raspberry Pi OS Full 32-bit (bullseye)	9760145408	https://downloads.raspberrypi.org/raspios_full_armhf_latest
+Raspberry Pi OS 32-bit (bullseye)	3972005888	https://downloads.raspberrypi.org/raspios_armhf_latest
+Raspberry Pi OS Lite 32-bit (bullseye)	1954545664	https://downloads.raspberrypi.org/raspios_lite_armhf_latest
+Raspberry Pi OS 64-bit (bullseye)	4093640704	https://downloads.raspberrypi.org/raspios_arm64_latest
+Raspberry Pi OS Lite 64-bit (bullseye)	1929379840	https://downloads.raspberrypi.org/raspios_lite_arm64_latest
+#
+# Raspberry Pi OS (buster)
+Raspberry Pi OS Full 32-bit (buster)	8602517504	https://downloads.raspberrypi.org/raspios_full_armhf/images/raspios_full_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-full.zip
+Raspberry Pi OS 32-bit (buster)	3980394496	https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2021-05-28/2021-05-07-raspios-buster-armhf.zip
+Raspberry Pi OS Lite 32-bit (buster)	1874853888	https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip
+Raspberry Pi OS 64-bit (buster)	3779067904	https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2020-08-24/2020-08-20-raspios-buster-arm64.zip
+Raspberry Pi OS Lite 64-bit (buster)	1816133632	https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2021-05-28/2021-05-07-raspios-buster-arm64-lite.zip
+#
+# Twister OS
 Twister OS 1.9.2	10793570816	https://archive.org/download/twister-osv-1-9-2/TwisterOSv1-9-2.zip
