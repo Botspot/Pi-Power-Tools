@@ -95,9 +95,9 @@ Rsync copies individual files to the image instead of using dd. This approach is
 
 #DOWNLOAD
 function download {
-  downloadicons="${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png"
+  downloadicons="${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/rpi-logo.png\n${DIRECTORY}/icons/twister.png"
   
-  downloadlist="$(cat ${DIRECTORY}/data/mirrors | grep -v ^\#)"
+  downloadlist="$(cat ${DIRECTORY}/data/mirrors | grep -v ^\# | awk -F '	' '{print $1"	"$2"	"$2"	"$3}')"
   
   downloadlist="$(paste -d '\n' <(echo -e "$downloadicons") <(echo -e "$downloadlist"))"
   
@@ -105,9 +105,9 @@ function download {
   
   repeat=1
   while [ $repeat = 1 ];do
-    output="$(echo -e "$downloadlist" | yad --list --separator='\n' --center --height=220 --width=700 \
+    output="$(echo -e "$downloadlist" | yad --list --separator='\n' --center --height=400 --width=700 \
     	--title='Download new IMG' --window-icon="${DIRECTORY}/icons/logo-64.png" \
-    	--text="Select IMG to download." --column=:IMG --column=Name --column='Bytes' --column=URL \
+    	--text="Select IMG to download." --column=:IMG --column=Name --column='Size:SZ' --column='bytes:HD' --column=URL \
     	--button='Back'!"${DIRECTORY}/icons/back.png"!:1 \
     	--button='Download'!"${DIRECTORY}/icons/download.png":0 \
     	2>/dev/null)"
@@ -125,8 +125,8 @@ function download {
     else
       
       dlname="$(echo "$output" | sed -n 2p)"
-      dlsize="$(echo "$output" | sed -n 3p)"
-      dlurl="$(echo "$output" | sed -n 4p)"
+      dlsize="$(echo "$output" | sed -n 4p)"
+      dlurl="$(echo "$output" | sed -n 5p)"
       
       #getting the filesize over the internet doesn't work for Raspbian Full for some reason.
       #dlsize="$(wget -qO- "$dlurl" | dd bs=1M count=1 | busybox unzip -lq - | sed -n 3p | awk '{print $1}')"
@@ -156,8 +156,8 @@ function download {
   echo "# Removing residual folder ${HOME}/download-img"
   rm -rf "${HOME}/download-img"
   
-  mkdir download-img
-  cd download-img
+  mkdir "${HOME}/download-img"
+  cd "${HOME}/download-img"
   curbytes=1
   while true;do
     curbytes="$(ls -al * 2>/dev/null | awk '{print $5}')"
@@ -173,8 +173,8 @@ function download {
   childpid=$!
   trap "kill $childpid" EXIT
   
-  #add first 100 mb to cache. This speeds the download process.
-  wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd bs=100M count=1 of=/dev/null
+  #add first 10MB to cache. This speeds the download process.
+  wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | dd ibs=10M obs=10M | dd bs=10M count=1 of=/dev/null 2>/dev/null
   
   trap "killall wget" EXIT
   wget -qO- "$dlurl" | "${DIRECTORY}/functions/buffer" | busybox unzip - -p | "${DIRECTORY}/functions/buffer" | dd of="${HOME}/download-img/ppt-dl-${dlfilename}" bs=10M
