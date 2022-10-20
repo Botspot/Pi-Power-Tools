@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm ${HOME}/logo-64.png
+rm -f ${HOME}/logo-64.png
 #get icon ahead of time so zenity can use it
 wget https://raw.githubusercontent.com/Botspot/Pi-Power-Tools/master/icons/logo-64.png
 
@@ -16,8 +16,10 @@ mv -f ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old 2>/dev/null
 git clone https://github.com/Botspot/Pi-Power-Tools || exit 1
 
 #transfer old config
-cp ${HOME}/Pi-Power-Tools.old/data/imglist ${HOME}/Pi-Power-Tools/data/
-cp ${HOME}/Pi-Power-Tools.old/data/ziplist ${HOME}/Pi-Power-Tools/data/
+if [ -d "${HOME}/Pi-Power-Tools.old/" ]; then
+	cp ${HOME}/Pi-Power-Tools.old/data/imglist ${HOME}/Pi-Power-Tools/data/
+	cp ${HOME}/Pi-Power-Tools.old/data/ziplist ${HOME}/Pi-Power-Tools/data/
+fi
 sleep 3
 
 echo 25
