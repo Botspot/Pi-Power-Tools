@@ -13,7 +13,12 @@ echo "# Downloading PPT to ${HOME}/Pi-Power-Tools..."
 cd $HOME
 rm -rf ${HOME}/Pi-Power-Tools.old
 mv -f ${HOME}/Pi-Power-Tools ${HOME}/Pi-Power-Tools.old 2>/dev/null
-git clone https://github.com/Botspot/Pi-Power-Tools || exit 1
+if git clone https://github.com/Botspot/Pi-Power-Tools || git clone https://github.com/Botspot/Pi-Power-Tools ;then
+  true #git clone succeeded
+else
+  echo "Failed to download github repository! please check your internet connection."
+  exit 1
+fi
 
 #transfer old config
 if [ -d "${HOME}/Pi-Power-Tools.old/" ]; then
@@ -42,7 +47,7 @@ Exec=${HOME}/Pi-Power-Tools/home menubutton
 Icon=${HOME}/Pi-Power-Tools/icons/logo-64.png
 Terminal=false
 Type=Application
-Categories=Utility;" >> ${HOME}/.local/share/applications/ppt.desktop
+Categories=Utility;" > ${HOME}/.local/share/applications/ppt.desktop
 
 #also copy to desktop
 cp ${HOME}/.local/share/applications/ppt.desktop ${HOME}/Desktop
